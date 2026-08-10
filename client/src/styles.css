@@ -156,3 +156,52 @@ button:hover {
   border-radius: 12px;
   cursor: pointer;
 }
+
+.ai-panel {
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 25px 0;
+}
+
+.ai-panel select,
+.ai-panel textarea {
+  background: #0d0d0d;
+  color: white;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.ai-panel textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.ai-result {
+  max-width: 900px;
+  padding: 20px;
+  border: 1px solid #333;
+  border-radius: 16px;
+  background: #0d0d0d;
+}
+
+.ai-result pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.ai-history {
+  max-width: 800px;
+  margin-top: 30px;
+}
+
+.history-item {
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid #292929;
+  border-radius: 12px;
+  cursor: pointer;
+}
