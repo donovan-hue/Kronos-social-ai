@@ -8,7 +8,7 @@ const router = express.Router();
 function createToken(user) {
   return jwt.sign(
     {
-      id: user._id,
+      id: user._id.toString(),
       username: user.username
     },
     process.env.JWT_SECRET || "development-secret",
@@ -20,86 +20,69 @@ function createToken(user) {
 
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password, displayName } = req.body;
+    const {
+      username,
+      email,
+      password,
+      displayName
+    } = req.body;
 
     if (!username || !email || !password) {
       return res.status(400).json({
-        error: "username, email y password son obligatorios"
+        error:
+          "username, email y password son obligatorios"
+      });
+    }
+
+    const normalizedUsername =
+      username.trim().toLowerCase();
+
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    if (normalizedUsername.length < 3) {
+      return res.status(400).json({
+        error:
+          "El usuario debe tener mínimo 3 caracteres"
       });
     }
 
     if (password.length < 6) {
       return res.status(400).json({
-        error: "La contraseña debe tener mínimo 6 caracteres"
+        error:
+          "La contraseña debe tener mínimo 6 caracteres"
       });
     }
 
     const exists = await User.findOne({
       $or: [
-        { username: username.toLowerCase() },
-        { email: email.toLowerCase() }
+        { username: normalizedUsername },
+        { email: normalizedEmail }
       ]
     });
 
     if (exists) {
       return res.status(409).json({
-        error: "El usuario o email ya existe"
+        error:
+          "El usuario o email ya existe"
       });
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
+    const passwordHash =
+      await bcrypt.hash(password, 12);
 
     const user = await User.create({
-      username: username.toLowerCase(),
-      email: email.toLowerCase(),
-      password: passwordHash,
-      displayName: displayName || username
+      username: normalizedUsername,
+      email: normalizedEmail,
+      passwordHash,
+      displayName:
+        displayName?.trim() ||
+        normalizedUsername
     });
 
     const token = createToken(user);
 
-    res.status(201).json({
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        displayName: user.displayName
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Error creando usuario"
-    });
-  }
-});
-
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({
-      email: email?.toLowerCase()
-    }).select("+password");
-
-    if (!user) {
-      return res.status(401).json({
-        error: "Credenciales inválidas"
-      });
-    }
-
-    const valid = await bcrypt.compare(password, user.password);
-
-    if (!valid) {
-      return res.status(401).json({
-        error: "Credenciales inválidas"
-      });
-    }
-
-    const token = createToken(user);
-
-    res.json({
+    return res.status(201).json({
       token,
       user: {
         id: user._id,
@@ -110,8 +93,76 @@ router.post("/login", async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    console.error(
+      "REGISTER_ERROR:",
+      error
+    );
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        error:
+          "El usuario o email ya existe"
+      });
+    }
+
+    return res.status(500).json({
+      error: "Error creando usuario"
+    });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error:
+          "email y password son obligatorios"
+      });
+    }
+
+    const user = await User.findOne({
+      email: email.trim().toLowerCase()
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        error: "Credenciales inválidas"
+      });
+    }
+
+    const valid =
+      await bcrypt.compare(
+        password,
+        user.passwordHash
+      );
+
+    if (!valid) {
+      return res.status(401).json({
+        error: "Credenciales inválidas"
+      });
+    }
+
+    const token = createToken(user);
+
+    return res.json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        displayName: user.displayName,
+        avatar: user.avatar
+      }
+    });
+  } catch (error) {
+    console.error(
+      "LOGIN_ERROR:",
+      error
+    );
+
+    return res.status(500).json({
       error: "Error iniciando sesión"
     });
   }
