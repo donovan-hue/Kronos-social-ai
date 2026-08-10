@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import SocialPage from "./features/social/SocialPage";
 import ScriptGenerator from "./features/script-ai/ScriptGenerator";
+import ImageGenerator from "./features/image-ai/ImageGenerator";
+import VideoGenerator from "./features/video-ai/VideoGenerator";
 
 function Home() {
   return (
@@ -20,9 +22,7 @@ function Home() {
 
 function Social() { return <SocialPage />; }
 
-function ImageAI() {
-  return <section className="page"><h2>Generador de Imágenes</h2></section>;
-}
+function ImageAI() { return <ImageGenerator />; }
 
 function VideoAI() {
   return <section className="page"><h2>Generador de Videos</h2></section>;

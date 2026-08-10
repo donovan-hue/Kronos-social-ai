@@ -205,3 +205,52 @@ button:hover {
   border-radius: 12px;
   cursor: pointer;
 }
+
+.image-result {
+  max-width: 900px;
+  margin-top: 25px;
+}
+
+.image-result img {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 18px;
+  border: 1px solid #333;
+}
+
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(180px, 1fr)
+  );
+  gap: 15px;
+}
+
+.image-card {
+  padding: 0;
+  overflow: hidden;
+  background: #0d0d0d;
+}
+
+.image-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.video-result {
+  max-width: 900px;
+  margin-top: 25px;
+}
+
+.video-result video {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 18px;
+  border: 1px solid #333;
+  background: #000;
+}
