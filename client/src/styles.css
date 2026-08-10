@@ -254,3 +254,35 @@ button:hover {
   border: 1px solid #333;
   background: #000;
 }
+
+.ai-center {
+  width: 100%;
+}
+
+.ai-center-header {
+  margin-bottom: 25px;
+}
+
+.ai-center-header h1 {
+  margin-bottom: 8px;
+}
+
+.ai-center-header p {
+  color: #888;
+}
+
+.ai-mode-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.ai-mode-selector button.active {
+  border-color: #fff;
+  background: #222;
+}
+
+.ai-workspace {
+  width: 100%;
+}

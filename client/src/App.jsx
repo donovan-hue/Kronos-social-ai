@@ -3,6 +3,7 @@ import SocialPage from "./features/social/SocialPage";
 import ScriptGenerator from "./features/script-ai/ScriptGenerator";
 import ImageGenerator from "./features/image-ai/ImageGenerator";
 import VideoGenerator from "./features/video-ai/VideoGenerator";
+import AICenter from "./features/ai/AICenter";
 
 function Home() {
   return (
@@ -39,6 +40,8 @@ export default function App() {
       <Route path="/ai/video" element={<VideoAI />} />
       <Route path="/ai/scripts" element={<ScriptAI />} />
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    
+        <Route path="/ai" element={<AICenter />} />
+</Routes>
   );
 }
