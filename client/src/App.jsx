@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import SocialPage from "./features/social/SocialPage";
+import ScriptGenerator from "./features/script-ai/ScriptGenerator";
 
 function Home() {
   return (
@@ -27,9 +28,7 @@ function VideoAI() {
   return <section className="page"><h2>Generador de Videos</h2></section>;
 }
 
-function ScriptAI() {
-  return <section className="page"><h2>Generador de Scripts</h2></section>;
-}
+function ScriptAI() { return <ScriptGenerator />; }
 
 export default function App() {
   return (

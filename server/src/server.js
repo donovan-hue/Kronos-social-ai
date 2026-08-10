@@ -12,6 +12,7 @@ const authRoutes = require("./modules/auth/auth.routes");
 const usersRoutes = require("./modules/users/users.routes");
 const postsRoutes = require("./modules/posts/posts.routes");
 const messagesRoutes = require("./modules/messages/messages.routes");
+const scriptRoutes = require("./modules/script-ai/script.routes");
 
 const app = express();
 const server = http.createServer(app);
@@ -43,6 +44,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/posts", postsRoutes);
 app.use("/api/messages", messagesRoutes);
+app.use("/api/ai/scripts", scriptRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({
