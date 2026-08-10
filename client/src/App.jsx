@@ -4,6 +4,7 @@ import ScriptGenerator from "./features/script-ai/ScriptGenerator";
 import ImageGenerator from "./features/image-ai/ImageGenerator";
 import VideoGenerator from "./features/video-ai/VideoGenerator";
 import AICenter from "./features/ai/AICenter";
+import UserSearch from "./features/users/UserSearch";
 
 function Home() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="*" element={<Navigate to="/" replace />} />
     
         <Route path="/ai" element={<AICenter />} />
+        <Route path="/users" element={<UserSearch />} />
 </Routes>
   );
 }

@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
       minlength: 3,
       maxlength: 30
     },
@@ -14,13 +15,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
-      trim: true
+      trim: true,
+      lowercase: true
     },
-    password: {
+    passwordHash: {
       type: String,
-      required: true,
-      select: false
+      required: true
     },
     displayName: {
       type: String,
@@ -28,24 +28,35 @@ const userSchema = new mongoose.Schema(
     },
     bio: {
       type: String,
-      default: ""
+      default: "",
+      maxlength: 500
     },
     avatar: {
       type: String,
       default: ""
     },
-    followers: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }],
-    following: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }]
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ]
   },
   {
     timestamps: true
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+userSchema.index({
+  username: 1
+});
+
+module.exports =
+  mongoose.models.User ||
+  mongoose.model("User", userSchema);
