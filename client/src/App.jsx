@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import SocialPage from "./features/social/SocialPage";
 
 function Home() {
   return (
@@ -16,9 +17,7 @@ function Home() {
   );
 }
 
-function Social() {
-  return <section className="page"><h2>Red Social</h2></section>;
-}
+function Social() { return <SocialPage />; }
 
 function ImageAI() {
   return <section className="page"><h2>Generador de Imágenes</h2></section>;
