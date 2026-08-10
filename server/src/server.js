@@ -7,6 +7,7 @@ const compression = require("compression");
 const connectDB = require("./config/db");
 const authRoutes = require("./modules/auth/auth.routes");
 const usersRoutes = require("./modules/users/users.routes");
+const postsRoutes = require("./modules/posts/posts.routes");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/posts", postsRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({
