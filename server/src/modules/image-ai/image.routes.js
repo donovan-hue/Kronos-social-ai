@@ -21,8 +21,9 @@ router.post("/generate", auth, async (req, res) => {
       user: req.user.id,
       prompt: prompt.trim(),
       model:
-        process.env.OPENAI_IMAGE_MODEL ||
-        "gpt-image-1",
+        result.model ||
+        process.env.OPENROUTER_IMAGE_MODEL ||
+        "google/gemini-2.5-flash-image",
       imageUrl: result.url || ""
     });
 

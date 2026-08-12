@@ -21,6 +21,7 @@ const scriptSchema = new mongoose.Schema(
         "youtube",
         "advertisement",
         "story",
+        "presentation",
         "custom"
       ],
       default: "custom"

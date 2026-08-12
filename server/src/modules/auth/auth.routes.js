@@ -122,8 +122,10 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     const user = await User.findOne({
-      email: email.trim().toLowerCase()
+      email: normalizedEmail
     });
 
     if (!user) {
@@ -132,11 +134,61 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const valid =
-      await bcrypt.compare(
+    let valid = false;
+
+    // Usuarios nuevos: contraseña almacenada como hash.
+    if (
+      typeof user.passwordHash === "string" &&
+      user.passwordHash.length > 0
+    ) {
+      valid = await bcrypt.compare(
         password,
         user.passwordHash
       );
+    } else {
+      // Migración de usuarios legacy:
+      // algunos registros antiguos tienen "password"
+      // en lugar de "passwordHash".
+      const legacyUser =
+        await User.collection.findOne({
+          _id: user._id
+        });
+
+      if (
+        legacyUser &&
+        typeof legacyUser.password === "string" &&
+        legacyUser.password.length > 0
+      ) {
+        // El campo legacy "password" contiene
+        // un hash bcrypt ($2a$10$...), no texto plano.
+        valid = await bcrypt.compare(
+          password,
+          legacyUser.password
+        );
+
+        if (valid) {
+          await User.collection.updateOne(
+            { _id: user._id },
+            {
+              $set: {
+                passwordHash: legacyUser.password
+              },
+              $unset: {
+                password: ""
+              }
+            }
+          );
+
+          user.passwordHash =
+            legacyUser.password;
+
+          console.log(
+            "AUTH_MIGRATION_OK:",
+            user.username
+          );
+        }
+      }
+    }
 
     if (!valid) {
       return res.status(401).json({
