@@ -15,6 +15,7 @@ const messagesRoutes = require("./modules/messages/messages.routes");
 const scriptRoutes = require("./modules/script-ai/script.routes");
 const imageRoutes = require("./modules/image-ai/image.routes");
 const videoRoutes = require("./modules/video-ai/video.routes");
+const chatRoutes = require("./modules/ai-core/routes/chat.routes");
 
 const app = express();
 const server = http.createServer(app);
@@ -49,6 +50,7 @@ app.use("/api/messages", messagesRoutes);
 app.use("/api/ai/scripts", scriptRoutes);
 app.use("/api/ai/images", imageRoutes);
 app.use("/api/ai/videos", videoRoutes);
+app.use("/api/ai", chatRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({

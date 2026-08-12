@@ -2,15 +2,17 @@ import { useState } from "react";
 import ScriptGenerator from "../script-ai/ScriptGenerator";
 import ImageGenerator from "../image-ai/ImageGenerator";
 import VideoGenerator from "../video-ai/VideoGenerator";
+import KronosChat from "./KronosChat";
 
 const modes = [
+  { id: "chat", label: "Kronos AI" },
   { id: "script", label: "Scripts" },
   { id: "image", label: "Imagen" },
   { id: "video", label: "Video" }
 ];
 
 export default function AICenter() {
-  const [mode, setMode] = useState("script");
+  const [mode, setMode] = useState("chat");
 
   return (
     <section className="ai-center page">
@@ -34,6 +36,7 @@ export default function AICenter() {
       </nav>
 
       <main className="ai-workspace">
+        {mode === "chat" && <KronosChat />}
         {mode === "script" && <ScriptGenerator />}
         {mode === "image" && <ImageGenerator />}
         {mode === "video" && <VideoGenerator />}
