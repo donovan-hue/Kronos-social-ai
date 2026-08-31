@@ -1,0 +1,13 @@
+{
+  "name": "kronos-guardian",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.0"
+  }
+}
+
