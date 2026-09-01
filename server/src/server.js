@@ -18,7 +18,7 @@ const messageRoutes = require("./modules/messages/messages.routes");
 const imageRoutes = require("./modules/image-ai/image.routes");
 const videoRoutes = require("./modules/video-ai/video.routes");
 const scriptRoutes = require("./modules/script-ai/script.routes");
-
+const inputSanitizer = require("./middleware/inputSanitizer");
 const app = express();
 const server = http.createServer(app);
 
@@ -74,6 +74,9 @@ app.use(
     limit: "1mb"
   })
 );
+
+app.use(inputSanitizer);
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,
