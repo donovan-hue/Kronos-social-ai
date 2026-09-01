@@ -1,125 +1,205 @@
-require("dotenv").config();
-
-const http = require("http");
 const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const { Server } = require("socket.io");
+const mongoose = require("mongoose");
 
-const connectDB = require("./config/db");
+const Post = require("./Post");
+const auth = require("../../middleware/auth");
 
-const authRoutes = require("./modules/auth/auth.routes");
-const userRoutes = require("./modules/users/user.routes");
-const postRoutes = require("./modules/posts/posts.routes");
-const messageRoutes = require("./modules/messages/message.routes");
-const imageRoutes = require("./modules/image-ai/image.routes");
-const videoRoutes = require("./modules/video-ai/video.routes");
-const scriptRoutes = require("./modules/script-ai/script.routes");
+const router = express.Router();
 
-const app = express();
-const server = http.createServer(app);
+const MAX_POST_LENGTH = 5000;
+const MAX_COMMENT_LENGTH = 1000;
 
-const PORT = process.env.PORT || 5000;
+function validId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
+}
 
-const allowedOrigins = (
-  process.env.CLIENT_URL ||
-  "http://localhost:5173"
-)
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+router.get("/", auth, async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .populate(
+        "author",
+        "username displayName avatar"
+      )
+      .populate(
+        "comments.user",
+        "username displayName avatar"
+      )
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
 
-app.use(
-  helmet({
-    crossOriginResourcePolicy: {
-      policy: "cross-origin"
-    }
-  })
-);
+    return res.json({ posts });
+  } catch (error) {
+    console.error("GET_POSTS_ERROR:", error);
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(
-        new Error("CORS_ORIGIN_NOT_ALLOWED")
-      );
-    },
-    credentials: true
-  })
-);
-
-app.use(
-  express.json({
-    limit: "1mb"
-  })
-);
-
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "1mb"
-  })
-);
-
-app.get("/health", (req, res) => {
-  res.json({
-    ok: true,
-    service: "kronos-social-ai"
-  });
-});
-
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/messages", messageRoutes);
-app.use("/api/ai/images", imageRoutes);
-app.use("/api/ai/videos", videoRoutes);
-app.use("/api/ai/scripts", scriptRoutes);
-
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    credentials: true
+    return res.status(500).json({
+      error: "Error obteniendo publicaciones"
+    });
   }
 });
 
-io.on("connection", (socket) => {
-  console.log(
-    `Socket conectado: ${socket.id}`
-  );
+router.post("/", auth, async (req, res) => {
+  try {
+    const content =
+      typeof req.body.content === "string"
+        ? req.body.content.trim()
+        : "";
 
-  socket.on("disconnect", () => {
-    console.log(
-      `Socket desconectado: ${socket.id}`
+    if (!content) {
+      return res.status(400).json({
+        error: "La publicación está vacía"
+      });
+    }
+
+    if (content.length > MAX_POST_LENGTH) {
+      return res.status(400).json({
+        error:
+          "La publicación no puede superar 5000 caracteres"
+      });
+    }
+
+    const post = await Post.create({
+      content,
+      author: req.user.id
+    });
+
+    await post.populate(
+      "author",
+      "username displayName avatar"
     );
-  });
+
+    return res.status(201).json({
+      post
+    });
+  } catch (error) {
+    console.error("CREATE_POST_ERROR:", error);
+
+    return res.status(500).json({
+      error: "Error creando publicación"
+    });
+  }
 });
 
-async function startServer() {
+router.post("/:postId/comments", auth, async (req, res) => {
   try {
-    await connectDB();
+    const { postId } = req.params;
 
-    server.listen(PORT, () => {
-      console.log(
-        `KRONOS SOCIAL AI API: http://localhost:${PORT}`
+    if (!validId(postId)) {
+      return res.status(400).json({
+        error: "ID de publicación inválido"
+      });
+    }
+
+    const content =
+      typeof req.body.content === "string"
+        ? req.body.content.trim()
+        : "";
+
+    if (!content) {
+      return res.status(400).json({
+        error: "El comentario está vacío"
+      });
+    }
+
+    if (content.length > MAX_COMMENT_LENGTH) {
+      return res.status(400).json({
+        error:
+          "El comentario no puede superar 1000 caracteres"
+      });
+    }
+
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      {
+        $push: {
+          comments: {
+            user: req.user.id,
+            content
+          }
+        }
+      },
+      {
+        new: true,
+        runValidators: true
+      }
+    )
+      .populate(
+        "author",
+        "username displayName avatar"
+      )
+      .populate(
+        "comments.user",
+        "username displayName avatar"
       );
+
+    if (!post) {
+      return res.status(404).json({
+        error: "Publicación no encontrada"
+      });
+    }
+
+    return res.status(201).json({
+      post
     });
   } catch (error) {
     console.error(
-      "STARTUP_ERROR:",
-      error.message
+      "CREATE_COMMENT_ERROR:",
+      error
     );
 
-    process.exit(1);
+    return res.status(500).json({
+      error: "Error creando comentario"
+    });
   }
-}
+});
 
-startServer();
+router.post("/:postId/like", auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    if (!validId(postId)) {
+      return res.status(400).json({
+        error: "ID de publicación inválido"
+      });
+    }
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({
+        error: "Publicación no encontrada"
+      });
+    }
+
+    const userId = new mongoose.Types.ObjectId(
+      req.user.id
+    );
+
+    const alreadyLiked = post.likes.some((id) =>
+      id.equals(userId)
+    );
+
+    if (alreadyLiked) {
+      post.likes = post.likes.filter(
+        (id) => !id.equals(userId)
+      );
+    } else {
+      post.likes.push(userId);
+    }
+
+    await post.save();
+
+    return res.json({
+      liked: !alreadyLiked,
+      likesCount: post.likes.length
+    });
+  } catch (error) {
+    console.error("LIKE_POST_ERROR:", error);
+
+    return res.status(500).json({
+      error: "Error actualizando like"
+    });
+  }
+});
+
+module.exports = router;
