@@ -1,6 +1,18 @@
 const OpenAI = require("openai");
+const ImageGeneration = require("./ImageGeneration");
 
-async function generateImage(prompt) {
+async function generateImage({ prompt, userId }) {
+  if (
+    typeof prompt !== "string" ||
+    !prompt.trim()
+  ) {
+    throw new Error("INVALID_IMAGE_PROMPT");
+  }
+
+  if (!userId) {
+    throw new Error("INVALID_USER_ID");
+  }
+
   if (!process.env.OPENROUTER_API_KEY) {
     return {
       url: "",
@@ -20,14 +32,15 @@ async function generateImage(prompt) {
     baseURL: "https://openrouter.ai/api/v1",
     defaultHeaders: {
       "HTTP-Referer":
-        process.env.CLIENT_URL || "http://localhost:3000",
+        process.env.CLIENT_URL ||
+        "http://localhost:3000",
       "X-Title": "Kronos Social AI"
     }
   });
 
   const response = await client.images.generate({
     model,
-    prompt,
+    prompt: prompt.trim(),
     size: "1024x1024"
   });
 
@@ -37,20 +50,65 @@ async function generateImage(prompt) {
     throw new Error("OPENROUTER_NO_IMAGE");
   }
 
+  let url = "";
+
   if (image.url) {
-    return {
-      url: image.url,
-      development: false,
-      model
-    };
+    url = image.url;
+  } else if (image.b64_json) {
+    url = `data:image/png;base64,${image.b64_json}`;
+  } else {
+    throw new Error(
+      "OPENROUTER_IMAGE_FORMAT_UNKNOWN"
+    );
   }
 
-  if (image.b64_json) {
-    return {
-      url: `data:image/png;base64,${image.b64_json}`,
-      development: false,
-      model
-    };
+  if (!image.b64_json) {
+    await ImageGeneration.create({
+      user: userId,
+      prompt: prompt.trim(),
+      model,
+      imageUrl: url
+    });
+  }
+
+  return {
+    url,
+    development: false,
+    model
+  };
+}
+
+async function uploadImage({ file, userId }) {
+  if (!file || !file.buffer) {
+    throw new Error("INVALID_IMAGE_FILE");
+  }
+
+  if (!userId) {
+    throw new Error("INVALID_USER_ID");
+  }
+
+  const imageUrl =
+    `data:${file.mimetype};base64,` +
+    file.buffer.toString("base64");
+
+  await ImageGeneration.create({
+    user: userId,
+    prompt: "Imagen subida por el usuario",
+    model: "upload",
+    imageUrl
+  });
+
+  return {
+    url: imageUrl,
+    development: false,
+    model: "upload"
+  };
+}
+
+module.exports = {
+  generateImage,
+  uploadImage
+};
   }
 
   throw new Error("OPENROUTER_IMAGE_FORMAT_UNKNOWN");
