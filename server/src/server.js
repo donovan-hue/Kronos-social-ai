@@ -1,5 +1,10 @@
 require("dotenv").config();
 
+if (!process.env.JWT_SECRET) {
+  console.error("STARTUP_ERROR: JWT_SECRET no configurado");
+  process.exit(1);
+}
+
 const http = require("http");
 const express = require("express");
 const cors = require("cors");
