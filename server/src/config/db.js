@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
 
 async function connectDB() {
-  if (!process.env.MONGODB_URI) {
-    console.warn("MONGODB_URI no configurada. Continuando sin MongoDB.");
-    return;
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    throw new Error("MONGODB_URI_NOT_CONFIGURED");
   }
 
-  await mongoose.connect(process.env.MONGODB_URI);
+  await mongoose.connect(uri);
+
   console.log("MongoDB conectado");
 }
 
