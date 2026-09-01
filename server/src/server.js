@@ -112,12 +112,23 @@ io.on("connection", socket => {
 
 const PORT = process.env.PORT || 5000;
 
-connectDB().catch(error => {
-  console.error("MongoDB error:", error.message);
-});
+async function startServer() {
+  try {
+    await connectDB();
 
-server.listen(PORT, () => {
-  console.log(
-    `KRONOS SOCIAL AI API: http://localhost:${PORT}`
-  );
-});
+    server.listen(PORT, () => {
+      console.log(
+        `KRONOS SOCIAL AI API: http://localhost:${PORT}`
+      );
+    });
+  } catch (error) {
+    console.error(
+      "Startup error:",
+      error.message
+    );
+
+    process.exit(1);
+  }
+}
+
+startServer();
