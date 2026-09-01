@@ -9,38 +9,60 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       minlength: 3,
-      maxlength: 30
+      maxlength: 30,
+      match: [
+        /^[a-z0-9_]+$/,
+        "El usuario solo puede contener letras, números y guion bajo"
+      ]
     },
+
     email: {
       type: String,
       required: true,
       unique: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
+      maxlength: 254,
+      match: [
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        "Email inválido"
+      ]
     },
+
     passwordHash: {
       type: String,
-      required: true
+      required: true,
+      minlength: 20
     },
+
     displayName: {
       type: String,
-      default: ""
+      default: "",
+      trim: true,
+      maxlength: 100
     },
+
     bio: {
       type: String,
       default: "",
+      trim: true,
       maxlength: 500
     },
+
     avatar: {
       type: String,
-      default: ""
+      default: "",
+      trim: true,
+      maxlength: 2000
     },
+
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
       }
     ],
+
     following: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,9 +71,18 @@ const userSchema = new mongoose.Schema(
     ]
   },
   {
-    timestamps: true
+    timestamps: true,
+    strict: true
   }
 );
+
+userSchema.index({
+  username: 1
+});
+
+userSchema.index({
+  email: 1
+});
 
 module.exports =
   mongoose.models.User ||
