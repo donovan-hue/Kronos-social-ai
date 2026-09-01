@@ -53,7 +53,11 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
-router.patch("/me", auth, async (req, res) => {
+router.patch(
+  "/me",
+  auth,
+  requireUser,
+  async (req, res) => {
   try {
     const allowedFields = [
       "displayName",
