@@ -180,15 +180,20 @@ io.on("connection", (socket) => {
 
     try {
       const decoded = jwt.verify(
-        token.replace(/^Bearer\s+/i, "").trim(),
-        process.env.JWT_SECRET
-      );
+  token.replace(/^Bearer\s+/i, "").trim(),
+  process.env.JWT_SECRET,
+  {
+    algorithms: ["HS256"]
+  }
+);
 
-      if (!decoded.id) {
-        socket.disconnect(true);
-        return;
-      }
-
+if (
+  typeof decoded.id !== "string" ||
+  !decoded.id.trim()
+) {
+  socket.disconnect(true);
+  return;
+}
       socket.join(`user:${decoded.id}`);
     } catch {
       socket.disconnect(true);
