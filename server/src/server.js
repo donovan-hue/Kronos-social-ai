@@ -12,7 +12,7 @@ const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 
 const authRoutes = require("./modules/auth/auth.routes");
-const userRoutes = require("./modules/users/user.routes");
+const userRoutes = require("./modules/users/users.routes");
 const postRoutes = require("./modules/posts/posts.routes");
 const messageRoutes = require("./modules/messages/messages.routes");
 const imageRoutes = require("./modules/image-ai/image.routes");
