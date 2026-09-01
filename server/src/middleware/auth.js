@@ -27,12 +27,16 @@ module.exports = function auth(req, res, next) {
       });
     }
 
-    const decoded = jwt.verify(token, secret);
-
-    if (!decoded.id) {
-      return res.status(401).json({
-        error: "Token inválido"
-      });
+    const decoded = jwt.verify(token, secret, {
+  algorithms: ["HS256"]
+});
+    if (
+  typeof decoded.id !== "string" ||
+  !decoded.id.trim()
+) {
+  return res.status(401).json({
+    error: "Token inválido"
+  });
     }
 
     req.user = decoded;
