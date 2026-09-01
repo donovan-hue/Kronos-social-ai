@@ -6,6 +6,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
+const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 
 const connectDB = require("./config/db");
@@ -129,6 +130,32 @@ io.on("connection", (socket) => {
   console.log(
     `Socket conectado: ${socket.id}`
   );
+
+  socket.on("authenticate", (token) => {
+    if (
+      typeof token !== "string" ||
+      !token.trim()
+    ) {
+      socket.disconnect(true);
+      return;
+    }
+
+    try {
+      const decoded = jwt.verify(
+        token.replace(/^Bearer\s+/i, "").trim(),
+        process.env.JWT_SECRET
+      );
+
+      if (!decoded.id) {
+        socket.disconnect(true);
+        return;
+      }
+
+      socket.join(`user:${decoded.id}`);
+    } catch {
+      socket.disconnect(true);
+    }
+  });
 
   socket.on("disconnect", () => {
     console.log(
