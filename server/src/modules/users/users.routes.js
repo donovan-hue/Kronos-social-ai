@@ -1,7 +1,10 @@
 const express = require("express");
 const User = require("./User");
 const auth = require("../../middleware/auth");
-
+const {
+  requireUser,
+  requireSameUser
+} = require("../../middleware/permissions");
 const router = express.Router();
 
 router.get("/me", auth, async (req, res) => {
