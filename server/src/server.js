@@ -117,7 +117,28 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/ai/images", imageRoutes);
 app.use("/api/ai/videos", videoRoutes);
 app.use("/api/ai/scripts", scriptRoutes);
+// Manejo global de errores
+app.use((err, req, res, next) => {
+  console.error("API_ERROR:", err);
 
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  const status =
+    Number.isInteger(err.statusCode)
+      ? err.statusCode
+      : Number.isInteger(err.status)
+        ? err.status
+        : 500;
+
+  res.status(status).json({
+    error:
+      status >= 500
+        ? "Error interno del servidor"
+        : err.message || "Error de solicitud"
+  });
+});
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
