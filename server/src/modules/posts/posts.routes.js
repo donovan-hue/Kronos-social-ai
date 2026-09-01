@@ -1,158 +1,125 @@
+require("dotenv").config();
+
+const http = require("http");
 const express = require("express");
-const Post = require("./Post");
-const auth = require("../../middleware/auth");
+const cors = require("cors");
+const helmet = require("helmet");
+const { Server } = require("socket.io");
 
-const router = express.Router();
+const connectDB = require("./config/db");
 
-router.post("/", auth, async (req, res) => {
-  try {
-    const { text = "", media = [] } = req.body;
+const authRoutes = require("./modules/auth/auth.routes");
+const userRoutes = require("./modules/users/user.routes");
+const postRoutes = require("./modules/posts/posts.routes");
+const messageRoutes = require("./modules/messages/message.routes");
+const imageRoutes = require("./modules/image-ai/image.routes");
+const videoRoutes = require("./modules/video-ai/video.routes");
+const scriptRoutes = require("./modules/script-ai/script.routes");
 
-    if (!text.trim() && !media.length) {
-      return res.status(400).json({
-        error: "La publicación necesita texto o multimedia"
-      });
+const app = express();
+const server = http.createServer(app);
+
+const PORT = process.env.PORT || 5000;
+
+const allowedOrigins = (
+  process.env.CLIENT_URL ||
+  "http://localhost:5173"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: {
+      policy: "cross-origin"
     }
+  })
+);
 
-    const post = await Post.create({
-      author: req.user.id,
-      text: text.trim(),
-      media
-    });
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true);
+      }
 
-    const result = await post.populate(
-      "author",
-      "username displayName avatar"
-    );
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
 
-    res.status(201).json({
-      post: result
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Error creando publicación"
-    });
+      return callback(
+        new Error("CORS_ORIGIN_NOT_ALLOWED")
+      );
+    },
+    credentials: true
+  })
+);
+
+app.use(
+  express.json({
+    limit: "1mb"
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "1mb"
+  })
+);
+
+app.get("/health", (req, res) => {
+  res.json({
+    ok: true,
+    service: "kronos-social-ai"
+  });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/ai/images", imageRoutes);
+app.use("/api/ai/videos", videoRoutes);
+app.use("/api/ai/scripts", scriptRoutes);
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true
   }
 });
 
-router.get("/feed", auth, async (req, res) => {
+io.on("connection", (socket) => {
+  console.log(
+    `Socket conectado: ${socket.id}`
+  );
+
+  socket.on("disconnect", () => {
+    console.log(
+      `Socket desconectado: ${socket.id}`
+    );
+  });
+});
+
+async function startServer() {
   try {
-    const limit = Math.min(
-      Number(req.query.limit) || 20,
-      50
-    );
+    await connectDB();
 
-    const posts = await Post.find()
-      .populate("author", "username displayName avatar")
-      .populate("comments.user", "username displayName avatar")
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
-
-    res.json({
-      posts
+    server.listen(PORT, () => {
+      console.log(
+        `KRONOS SOCIAL AI API: http://localhost:${PORT}`
+      );
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Error obteniendo feed"
-    });
+    console.error(
+      "STARTUP_ERROR:",
+      error.message
+    );
+
+    process.exit(1);
   }
-});
+}
 
-router.get("/:id", async (req, res) => {
-  const post = await Post.findById(req.params.id)
-    .populate("author", "username displayName avatar")
-    .populate("comments.user", "username displayName avatar");
-
-  if (!post) {
-    return res.status(404).json({
-      error: "Publicación no encontrada"
-    });
-  }
-
-  res.json({ post });
-});
-
-router.post("/:id/like", auth, async (req, res) => {
-  const post = await Post.findById(req.params.id);
-
-  if (!post) {
-    return res.status(404).json({
-      error: "Publicación no encontrada"
-    });
-  }
-
-  const index = post.likes.findIndex(
-    id => String(id) === String(req.user.id)
-  );
-
-  if (index === -1) {
-    post.likes.push(req.user.id);
-  } else {
-    post.likes.splice(index, 1);
-  }
-
-  await post.save();
-
-  res.json({
-    liked: index === -1,
-    likes: post.likes.length
-  });
-});
-
-router.post("/:id/comments", auth, async (req, res) => {
-  const { text } = req.body;
-
-  if (!text || !text.trim()) {
-    return res.status(400).json({
-      error: "El comentario está vacío"
-    });
-  }
-
-  const post = await Post.findById(req.params.id);
-
-  if (!post) {
-    return res.status(404).json({
-      error: "Publicación no encontrada"
-    });
-  }
-
-  post.comments.push({
-    user: req.user.id,
-    text: text.trim()
-  });
-
-  await post.save();
-
-  await post.populate(
-    "comments.user",
-    "username displayName avatar"
-  );
-
-  res.status(201).json({
-    comment: post.comments[post.comments.length - 1]
-  });
-});
-
-router.delete("/:id", auth, async (req, res) => {
-  const post = await Post.findOne({
-    _id: req.params.id,
-    author: req.user.id
-  });
-
-  if (!post) {
-    return res.status(404).json({
-      error: "Publicación no encontrada o sin permisos"
-    });
-  }
-
-  await post.deleteOne();
-
-  res.json({
-    deleted: true
-  });
-});
-
-module.exports = router;
+startServer();
