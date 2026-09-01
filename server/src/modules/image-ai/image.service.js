@@ -109,11 +109,3 @@ module.exports = {
   generateImage,
   uploadImage
 };
-  }
-
-  throw new Error("OPENROUTER_IMAGE_FORMAT_UNKNOWN");
-}
-
-module.exports = {
-  generateImage
-};
