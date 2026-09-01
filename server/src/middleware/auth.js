@@ -9,18 +9,36 @@ module.exports = function auth(req, res, next) {
     });
   }
 
-  try {
-    const token = header.slice(7);
+  const secret = process.env.JWT_SECRET;
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "development-secret"
-    );
+  if (!secret) {
+    console.error("JWT_SECRET no configurado");
+    return res.status(500).json({
+      error: "Configuración de seguridad incompleta"
+    });
+  }
+
+  try {
+    const token = header.slice(7).trim();
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Token inválido"
+      });
+    }
+
+    const decoded = jwt.verify(token, secret);
+
+    if (!decoded.id) {
+      return res.status(401).json({
+        error: "Token inválido"
+      });
+    }
 
     req.user = decoded;
     next();
   } catch {
-    res.status(401).json({
+    return res.status(401).json({
       error: "Token inválido o expirado"
     });
   }
