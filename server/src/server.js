@@ -104,7 +104,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api", apiLimiter);
 
 app.use(
   "/api/auth",
