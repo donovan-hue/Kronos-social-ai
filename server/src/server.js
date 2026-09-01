@@ -88,6 +88,16 @@ const apiLimiter = rateLimit({
 });
 
 app.use("/api", apiLimiter);
+const abuseLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error:
+      "Demasiadas acciones en poco tiempo. Intenta nuevamente más tarde."
+  }
+});
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -115,8 +125,8 @@ app.use(
 );
 
 app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/messages", messageRoutes);
+app.use("/api/posts", abuseLimiter, postRoutes);
+app.use("/api/messages", abuseLimiter, messageRoutes);
 app.use("/api/ai/images", imageRoutes);
 app.use("/api/ai/videos", videoRoutes);
 app.use("/api/ai/scripts", scriptRoutes);
