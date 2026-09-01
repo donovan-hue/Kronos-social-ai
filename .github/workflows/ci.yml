@@ -32,3 +32,7 @@ jobs:
 
       - name: Validate server syntax
         run: node --check server/src/server.js
+      
+      - name: Run server tests
+        working-directory: server
+        run: npm test
