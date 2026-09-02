@@ -1,34 +1,9 @@
 const express = require("express");
-const multer = require("multer");
 const auth = require("../../middleware/auth");
+const { handleUpload } = require("../../middleware/upload");
 const imageService = require("./image.service");
 
 const router = express.Router();
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-
-const allowedMimeTypes = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp"
-]);
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: MAX_FILE_SIZE,
-    files: 1
-  },
-  fileFilter(req, file, callback) {
-    if (!allowedMimeTypes.has(file.mimetype)) {
-      return callback(
-        new Error("UNSUPPORTED_IMAGE_TYPE")
-      );
-    }
-
-    callback(null, true);
-  }
-});
 
 router.post(
   "/generate",
@@ -77,40 +52,8 @@ router.post(
 router.post(
   "/upload",
   auth,
-  (req, res, next) => {
-    upload.single("image")(req, res, (error) => {
-      if (error instanceof multer.MulterError) {
-        if (error.code === "LIMIT_FILE_SIZE") {
-          return res.status(413).json({
-            error:
-              "La imagen no puede superar 10 MB"
-          });
-        }
-
-        return res.status(400).json({
-          error:
-            "Error procesando el archivo"
-        });
-      }
-
-      if (error) {
-        if (
-          error.message ===
-          "UNSUPPORTED_IMAGE_TYPE"
-        ) {
-          return res.status(400).json({
-            error:
-              "Formato de imagen no permitido. Usa JPG, PNG o WebP."
-          });
-        }
-
-        return next(error);
-      }
-
-      next();
-    });
-  },
-  async (req, res) => {
+    handleUpload("image"),
+      async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({
