@@ -43,7 +43,13 @@ async function generateVideo(prompt) {
   throw new Error("VIDEO_PROVIDER_ERROR");
   }
 
-  const data = await response.json();
+  let data;
+
+try {
+  data = await response.json();
+} catch {
+  throw new Error("VIDEO_INVALID_RESPONSE");
+}
 
   const videoUrl =
     data.videoUrl ||
