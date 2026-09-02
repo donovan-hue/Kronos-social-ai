@@ -52,8 +52,9 @@ router.post(
 );
 
 router.post(
-  "/upload",
+    "/upload",
   auth,
+  aiLimiter,
   handleUpload("image"),
   async (req, res) => {
     try {
