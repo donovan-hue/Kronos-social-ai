@@ -22,7 +22,6 @@ async function generateVideo(prompt) {
   }
 
   let response;
-
 try {
   response = await fetch(VIDEO_API_URL, {
     
@@ -70,11 +69,20 @@ try {
   }
 
   return {
+    
     status: "completed",
     videoUrl,
     development: false,
     model: VIDEO_MODEL
   };
+  } catch (error) {
+  console.error(
+    "VIDEO_PROVIDER_NETWORK_ERROR:",
+    error?.message || error
+  );
+
+  throw new Error("VIDEO_PROVIDER_UNAVAILABLE");
+}
 }
 
 module.exports = {
