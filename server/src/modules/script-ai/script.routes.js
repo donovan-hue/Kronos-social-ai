@@ -1,11 +1,12 @@
 const express = require("express");
 const Script = require("./Script");
 const auth = require("../../middleware/auth");
+const aiLimiter = require("../../middleware/aiLimiter");
 const { generateScript } = require("./script.service");
 
 const router = express.Router();
 
-router.post("/generate", auth, async (req, res) => {
+router.post("/generate", auth, aiLimiter, async (req, res) => {
   try {
     const { prompt, type = "custom" } = req.body;
 
