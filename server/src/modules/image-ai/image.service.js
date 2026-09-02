@@ -37,8 +37,10 @@ async function generateImage({ prompt, userId }) {
       "X-Title": "Kronos Social AI"
     }
   });
- try { 
-  const response = await client.images.generate({
+ let response;
+
+try {
+  response = await client.images.generate({
     model,
     prompt: prompt.trim(),
     size: "1024x1024"
@@ -50,7 +52,7 @@ async function generateImage({ prompt, userId }) {
   );
 
   throw new Error("IMAGE_PROVIDER_UNAVAILABLE");
- }
+}
   const image = response.data?.[0];
 
   if (!image) {
