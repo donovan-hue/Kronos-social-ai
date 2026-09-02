@@ -25,25 +25,7 @@ async function generateVideo(prompt) {
 
 try {
   response = await fetch(VIDEO_API_URL, {
-    signal: AbortSignal.timeout(30000),
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${VIDEO_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: VIDEO_MODEL,
-      prompt: prompt.trim()
-    })
-  });
-} catch (error) {
-  console.error(
-    "VIDEO_PROVIDER_NETWORK_ERROR:",
-    error?.message || error
-  );
-
-  throw new Error("VIDEO_PROVIDER_UNAVAILABLE");
-}
+    
   signal: AbortSignal.timeout(30000),
     method: "POST",
     headers: {
