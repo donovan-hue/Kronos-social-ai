@@ -22,6 +22,7 @@ async function generateVideo(prompt) {
   }
 
   const response = await fetch(VIDEO_API_URL, {
+  signal: AbortSignal.timeout(30000),
     method: "POST",
     headers: {
       "Content-Type": "application/json",
