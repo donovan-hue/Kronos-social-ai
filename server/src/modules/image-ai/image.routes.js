@@ -9,6 +9,7 @@ const router = express.Router();
 router.post(
   "/generate",
   auth,
+  aiLimiter,
   async (req, res) => {
     try {
       const { prompt } = req.body;
