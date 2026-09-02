@@ -1,5 +1,6 @@
 const express = require("express");
 const auth = require("../../middleware/auth");
+const aiLimiter = require("../../middleware/aiLimiter");
 const { handleUpload } = require("../../middleware/upload");
 const imageService = require("./image.service");
 
