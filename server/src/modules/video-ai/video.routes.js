@@ -1,3 +1,4 @@
+const aiLimiter = require("../../middleware/aiLimiter");
 const express = require("express");
 const VideoGeneration = require("./VideoGeneration");
 const auth = require("../../middleware/auth");
@@ -5,7 +6,7 @@ const { generateVideo } = require("./video.service");
 
 const router = express.Router();
 
-router.post("/generate", auth, async (req, res) => {
+router.post("/generate", auth, aiLimiter, async (req, res) => {
   try {
     const { prompt } = req.body;
 
