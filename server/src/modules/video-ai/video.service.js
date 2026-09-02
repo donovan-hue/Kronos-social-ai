@@ -34,15 +34,13 @@ async function generateVideo(prompt) {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
+  console.error(
+    "VIDEO_PROVIDER_ERROR:",
+    response.status,
+    response.statusText
+  );
 
-    console.error(
-      "VIDEO_PROVIDER_ERROR:",
-      response.status,
-      errorText
-    );
-
-    throw new Error("VIDEO_PROVIDER_ERROR");
+  throw new Error("VIDEO_PROVIDER_ERROR");
   }
 
   const data = await response.json();
