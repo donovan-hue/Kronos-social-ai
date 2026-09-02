@@ -17,8 +17,9 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
     }
 
     const result = await generateVideo(
-      prompt.trim()
-    );
+  prompt.trim(),
+  req.user.id
+);
 
     const generation =
       await VideoGeneration.create({
