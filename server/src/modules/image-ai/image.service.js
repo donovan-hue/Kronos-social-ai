@@ -37,13 +37,20 @@ async function generateImage({ prompt, userId }) {
       "X-Title": "Kronos Social AI"
     }
   });
-
+ try { 
   const response = await client.images.generate({
     model,
     prompt: prompt.trim(),
     size: "1024x1024"
   });
+} catch (error) {
+  console.error(
+    "IMAGE_PROVIDER_ERROR:",
+    error?.message || error
+  );
 
+  throw new Error("IMAGE_PROVIDER_UNAVAILABLE");
+ }
   const image = response.data?.[0];
 
   if (!image) {
