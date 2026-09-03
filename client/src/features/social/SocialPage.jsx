@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 const API =
@@ -6,7 +7,8 @@ const API =
   "http://localhost:5000/api";
 
 function getAuthConfig() {
-  const token = localStorage.getItem("kronos_token");
+  const token =
+    localStorage.getItem("kronos_token");
 
   return token
     ? {
@@ -17,12 +19,32 @@ function getAuthConfig() {
     : {};
 }
 
+function formatDate(date) {
+  if (!date) {
+    return "";
+  }
+
+  try {
+    return new Date(date).toLocaleString("es-MX", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  } catch {
+    return "";
+  }
+}
+
 export default function SocialPage() {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
-  const [publishing, setPublishing] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [likingPostId, setLikingPostId] = useState(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   async function loadPosts() {
     setLoading(true);
@@ -41,7 +63,7 @@ export default function SocialPage() {
       );
     } catch (requestError) {
       console.error(
-        "KRONOS_SOCIAL_LOAD_POSTS_ERROR:",
+        "KRONOS_SOCIAL_LOAD_ERROR:",
         requestError
       );
 
@@ -55,22 +77,15 @@ export default function SocialPage() {
   }
 
   async function createPost(event) {
-    event?.preventDefault();
+    event.preventDefault();
 
     const value = content.trim();
 
-    if (!value || publishing) {
+    if (!value || creating) {
       return;
     }
 
-    const token = localStorage.getItem("kronos_token");
-
-    if (!token) {
-      setError("Tu sesión no está disponible.");
-      return;
-    }
-
-    setPublishing(true);
+    setCreating(true);
     setError("");
 
     try {
@@ -101,22 +116,16 @@ export default function SocialPage() {
           "No se pudo crear la publicación."
       );
     } finally {
-      setPublishing(false);
+      setCreating(false);
     }
   }
 
   async function likePost(postId) {
-    if (!postId) {
+    if (!postId || likingPostId) {
       return;
     }
 
-    const token = localStorage.getItem("kronos_token");
-
-    if (!token) {
-      setError("Tu sesión no está disponible.");
-      return;
-    }
-
+    setLikingPostId(postId);
     setError("");
 
     try {
@@ -126,36 +135,26 @@ export default function SocialPage() {
         getAuthConfig()
       );
 
-      const likesCount = response.data?.likesCount;
-      const liked = response.data?.liked;
-
       setPosts((currentPosts) =>
-        currentPosts.map((post) => {
-          if (post._id !== postId) {
-            return post;
-          }
-
-          const currentLikes = Array.isArray(post.likes)
-            ? post.likes
-            : [];
-
-          return {
-            ...post,
-            likes:
-              typeof likesCount === "number"
-                ? Array.from(
-                    { length: likesCount },
-                    (_, index) => index
-                  )
-                : liked
-                  ? [...currentLikes, "local"]
-                  : currentLikes.slice(0, -1),
-          };
-        })
+        currentPosts.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                likesCount:
+                  typeof response.data?.likesCount ===
+                  "number"
+                    ? response.data.likesCount
+                    : post.likesCount || 0,
+                liked: Boolean(
+                  response.data?.liked
+                ),
+              }
+            : post
+        )
       );
     } catch (requestError) {
       console.error(
-        "KRONOS_SOCIAL_LIKE_POST_ERROR:",
+        "KRONOS_SOCIAL_LIKE_ERROR:",
         requestError
       );
 
@@ -163,19 +162,38 @@ export default function SocialPage() {
         requestError.response?.data?.error ||
           "No se pudo actualizar el like."
       );
+    } finally {
+      setLikingPostId(null);
     }
   }
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  if (loading) {
+    return (
+      <section className="page">
+        <h2>Inicio</h2>
+        <p>Cargando publicaciones...</p>
+      </section>
+    );
+  }
 
   return (
-    <section className="page">
-      <h2>Red Social</h2>
+    <section className="page social-page">
+      <header>
+        <h2>Inicio</h2>
+
+        <p>
+          Tu feed de Kronos.
+        </p>
+      </header>
+
+      {error && (
+        <p role="alert">
+          {error}
+        </p>
+      )}
 
       <form
-        className="composer"
+        className="create-post-form"
         onSubmit={createPost}
       >
         <textarea
@@ -184,85 +202,111 @@ export default function SocialPage() {
             setContent(event.target.value)
           }
           maxLength={5000}
-          placeholder="¿Qué quieres publicar?"
-          disabled={publishing}
+          placeholder="¿Qué estás pensando?"
+          disabled={creating}
         />
 
         <button
           type="submit"
           disabled={
-            publishing || !content.trim()
+            creating ||
+            !content.trim()
           }
         >
-          {publishing
+          {creating
             ? "Publicando..."
             : "Publicar"}
         </button>
       </form>
 
-      {error && (
-        <p role="alert">
-          {error}
-        </p>
-      )}
-
-      {loading && (
-        <p>
-          Cargando publicaciones...
-        </p>
-      )}
-
-      {!loading &&
-        !error &&
-        posts.length === 0 && (
+      <div className="posts-list">
+        {posts.length === 0 ? (
           <p>
-            No hay publicaciones todavía.
+            Todavía no hay publicaciones.
           </p>
-        )}
+        ) : (
+          posts.map((post) => {
+            const comments = Array.isArray(
+              post.comments
+            )
+              ? post.comments
+              : [];
 
-      <div className="feed">
-        {posts.map((post) => (
-          <article
-            className="post"
-            key={post._id}
-          >
-            <header>
-              <strong>
-                {post.author?.displayName ||
-                  post.author?.username ||
-                  "Usuario"}
-              </strong>
+            const likesCount =
+              typeof post.likesCount ===
+              "number"
+                ? post.likesCount
+                : Array.isArray(post.likes)
+                  ? post.likes.length
+                  : 0;
 
-              {post.author?.username && (
-                <span>
-                  @{post.author.username}
-                </span>
-              )}
-            </header>
-
-            <p>
-              {post.content}
-            </p>
-
-            <div className="post-actions">
-              <button
-                type="button"
-                onClick={() =>
-                  likePost(post._id)
-                }
+            return (
+              <article
+                className="post"
+                key={post._id}
               >
-                Me gusta{" "}
-                {post.likes?.length || 0}
-              </button>
+                <header className="post-header">
+                  <div>
+                    <strong>
+                      {post.author?.displayName ||
+                        post.author?.username ||
+                        "Usuario"}
+                    </strong>
 
-              <span>
-                Comentarios{" "}
-                {post.comments?.length || 0}
-              </span>
-            </div>
-          </article>
-        ))}
+                    {post.author?.username && (
+                      <span>
+                        @{post.author.username}
+                      </span>
+                    )}
+                  </div>
+
+                  <small>
+                    {formatDate(
+                      post.createdAt
+                    )}
+                  </small>
+                </header>
+
+                <Link
+                  className="post-content-link"
+                  to={`/post/${post._id}`}
+                >
+                  <p>
+                    {post.content}
+                  </p>
+                </Link>
+
+                <div className="post-actions">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      likePost(post._id)
+                    }
+                    disabled={
+                      likingPostId ===
+                      post._id
+                    }
+                  >
+                    {post.liked
+                      ? "Ya no me gusta"
+                      : "Me gusta"}{" "}
+                    {likesCount}
+                  </button>
+
+                  <Link
+                    to={`/post/${post._id}`}
+                  >
+                    Comentarios{" "}
+                    {comments.length}
+                  </Link>
+                </div>
+              </article>
+            );
+          })
+        )}
       </div>
     </section>
   );
 }
+
+
