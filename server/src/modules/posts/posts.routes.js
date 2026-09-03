@@ -6,6 +6,48 @@ const auth = require("../../middleware/auth");
 
 const router = express.Router();
 
+router.get("/:postId", auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    if (!validId(postId)) {
+      return res.status(400).json({
+        error: "ID de publicación inválido"
+      });
+    }
+
+    const post = await Post.findById(postId)
+      .populate("author", AUTHOR_FIELDS)
+      .populate(
+        "comments.user",
+        COMMENT_USER_FIELDS
+      )
+      .lean();
+
+    if (!post) {
+      return res.status(404).json({
+        error: "Publicación no encontrada"
+      });
+    }
+
+    return res.status(200).json({
+      post: normalizePost(
+        post,
+        req.user.id
+      )
+    });
+  } catch (error) {
+    console.error(
+      "GET_POST_ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error obteniendo publicación"
+    });
+  }
+});
+
 const FEED_LIMIT = 50;
 const MAX_POST_LENGTH = 5000;
 const MAX_COMMENT_LENGTH = 1000;
