@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+} from "react-router-dom";
 
 import Auth from "./features/auth/Auth";
 import ImageGenerator from "./features/image-ai/ImageGenerator";
@@ -14,12 +19,23 @@ function AppContent() {
     try {
       const token = localStorage.getItem("kronos_token");
 
-      if (!token) return null;
+      if (!token) {
+        return null;
+      }
 
-      return JSON.parse(
-        localStorage.getItem("kronos_user") || "null"
-      );
-    } catch {
+      const storedUser = localStorage.getItem("kronos_user");
+
+      if (!storedUser) {
+        return null;
+      }
+
+      return JSON.parse(storedUser);
+    } catch (error) {
+      console.error("KRONOS_USER_LOAD_ERROR:", error);
+
+      localStorage.removeItem("kronos_token");
+      localStorage.removeItem("kronos_user");
+
       return null;
     }
   });
@@ -29,9 +45,13 @@ function AppContent() {
   }
 
   function logout() {
-    localStorage.removeItem("kronos_token");
-    localStorage.removeItem("kronos_user");
-    setUser(null);
+    try {
+      localStorage.removeItem("kronos_token");
+      localStorage.removeItem("kronos_user");
+      setUser(null);
+    } catch (error) {
+      console.error("KRONOS_LOGOUT_ERROR:", error);
+    }
   }
 
   if (!user) {
@@ -42,61 +62,75 @@ function AppContent() {
     <BrowserRouter>
       <nav className="navbar">
         <Link to="/">Inicio</Link>
-        <Link to="/ai">IA</Link>
-        <Link to="/ai/image">Imagen</Link>
-        <Link to="/ai/script">Guiones</Link>
-        <Link to="/ai/video">Video</Link>
-        <Link to="/social">Social</Link>
-        <Link to="/users">Usuarios</Link>
 
-        <button onClick={logout}>
+        <Link to="/ai">IA</Link>
+
+        <Link to="/ai/image">
+          Imagen
+        </Link>
+
+        <Link to="/ai/script">
+          Guiones
+        </Link>
+
+        <Link to="/ai/video">
+          Video
+        </Link>
+
+        <Link to="/social">
+          Social
+        </Link>
+
+        <Link to="/users">
+          Usuarios
+        </Link>
+
+        <button
+          type="button"
+          onClick={logout}
+        >
           Cerrar sesión
         </button>
       </nav>
 
       <Routes>
+        {/* Inicio = Feed principal */}
         <Route
           path="/"
-          element={
-            <main className="page">
-              <h1>
-                Kronos Social AI
-              </h1>
-
-              <p>
-                Bienvenido,{" "}
-                {user.displayName ||
-                  user.username}
-              </p>
-            </main>
-          }
+          element={<SocialPage />}
         />
 
+        {/* Centro de IA */}
         <Route
           path="/ai"
           element={<AICenter />}
         />
 
+        {/* Generador de imágenes */}
         <Route
           path="/ai/image"
           element={<ImageGenerator />}
         />
 
+        {/* Generador de guiones */}
         <Route
           path="/ai/script"
           element={<ScriptGenerator />}
         />
 
+        {/* Generador de videos */}
         <Route
           path="/ai/video"
           element={<VideoGenerator />}
         />
 
+        {/* Red social */}
         <Route
           path="/social"
           element={<SocialPage />}
         />
 
+        {/* Búsqueda de usuarios */}
         <Route
           path="/users"
           element={<UserSearch />}
