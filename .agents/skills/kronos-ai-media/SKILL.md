@@ -5,92 +5,122 @@
 **Nombre:** `kronos-ai-media`
 **Proyecto:** Kronos Social AI
 **Ruta:** `.agents/skills/kronos-ai-media/SKILL.md`
-**Tipo:** AI Image & Video Generation Skill
+**Tipo:** AI Image & Video Generation Architecture & Development Skill
 **Estado:** Producción
 
 ---
 
 # 1. PROPÓSITO
 
-Esta skill controla la arquitectura, integración y operación de las funciones de inteligencia artificial destinadas a:
+Esta skill controla exclusivamente el área de **generación multimedia mediante IA de Kronos Social AI**.
 
-* generación de imágenes;
-* generación de videos;
-* procesamiento multimedia mediante IA;
-* envío de prompts;
-* configuración de generación;
-* recepción de resultados;
-* almacenamiento de resultados;
-* historial de generaciones;
-* estados de procesamiento;
-* errores;
-* integración frontend ↔ backend.
+Kronos Social AI está compuesto por tres áreas principales:
 
-Las claves y proveedores de IA permanecen exclusivamente en backend.
+```text
+KRONOS SOCIAL
+KRONOS AI MEDIA
+KRONOS AI SCRIPT
+```
+
+Esta skill corresponde únicamente a:
+
+```text
+KRONOS AI MEDIA
+```
+
+Su responsabilidad comprende:
+
+* generación de imágenes mediante IA;
+* generación de videos mediante IA;
+* prompts multimedia;
+* configuración de generaciones;
+* procesamiento de generaciones;
+* estados de generación;
+* resultados multimedia;
+* almacenamiento;
+* historial;
+* integración con backend;
+* integración con MongoDB mediante backend;
+* integración con Socket.IO cuando corresponda;
+* integración frontend ↔ backend;
+* control de errores;
+* seguridad;
+* control de solicitudes;
+* preparación para producción.
+
+No debe absorber la lógica perteneciente a:
+
+```text
+KRONOS SOCIAL
+KRONOS AI SCRIPT
+```
 
 ---
 
-# 2. ARQUITECTURA
+# 2. REGLA PRINCIPAL DE KRONOS
 
-El flujo principal debe ser:
+Toda generación multimedia debe utilizar infraestructura real.
+
+Flujo obligatorio:
 
 ```text
-AI Media Screen
-       ↓
-AI Media Component
-       ↓
-Hook
-       ↓
-AI Media Service
-       ↓
-Backend API
-       ↓
-AI Provider
-       ↓
-Backend
-       ↓
-Storage / Database
-       ↓
+Kronos AI Media UI
+        ↓
 Frontend
+        ↓
+Kronos Backend
+        ↓
+AI Service
+        ↓
+AI Provider
+        ↓
+Result
+        ↓
+Storage
+        ↓
+MongoDB
+        ↓
+Kronos Frontend
 ```
 
 El frontend nunca debe comunicarse directamente con proveedores privados de IA.
 
 ---
 
-# 3. SEPARACIÓN DE RESPONSABILIDADES
+# 3. PROVEEDORES DE IA
 
-Separar:
-
-```text
-Prompt
-Configuration
-Generation
-Processing
-Storage
-History
-Display
-```
-
-No colocar toda la lógica de generación dentro de un único componente.
-
-Preferir:
+El proyecto Kronos ya contempla integración con:
 
 ```text
-ai/
-├── components/
-├── hooks/
-├── services/
-├── types/
-├── utils/
-└── constants/
+OpenAI
+Google GenAI
 ```
 
-La estructura exacta debe adaptarse al repositorio existente.
+La implementación debe utilizar las dependencias y servicios realmente presentes en el proyecto.
+
+No introducir un proveedor adicional solamente porque sea popular.
+
+No asumir que un modelo, endpoint o capacidad existe.
+
+Antes de implementar:
+
+```text
+provider
+model
+endpoint
+request
+response
+capabilities
+limits
+```
+
+deben verificarse contra la implementación real del backend y la documentación correspondiente.
 
 ---
 
-# 4. SEGURIDAD DE CREDENCIALES
+# 4. UBICACIÓN DE LAS API KEYS
+
+Las credenciales de IA pertenecen exclusivamente al backend.
 
 Nunca colocar en frontend:
 
@@ -98,34 +128,339 @@ Nunca colocar en frontend:
 OPENAI_API_KEY
 GOOGLE_API_KEY
 GEMINI_API_KEY
-provider secrets
-storage private keys
-database credentials
 ```
 
-Nunca:
+ni ninguna otra credencial privada.
 
-```javascript
-const API_KEY = "secret";
+Arquitectura:
+
+```text
+Frontend
+   │
+   │ authenticated request
+   ▼
+Kronos Backend
+   │
+   ├── OpenAI
+   │
+   └── Google GenAI
 ```
 
-La comunicación debe realizarse mediante el backend autorizado.
+El frontend únicamente recibe resultados o estados autorizados.
 
 ---
 
-# 5. PROMPTS
+# 5. RESPONSABILIDADES DEL BACKEND
 
-Los prompts enviados por el usuario deben validarse antes de enviarse.
+El backend debe controlar:
+
+```text
+authentication
+authorization
+prompt validation
+generation validation
+provider selection
+provider credentials
+AI request
+provider response
+errors
+limits
+storage
+database persistence
+generation status
+```
+
+El frontend no debe implementar estas responsabilidades.
+
+---
+
+# 6. RESPONSABILIDADES DEL FRONTEND
+
+El frontend controla:
+
+```text
+prompt input
+generation controls
+UI state
+loading
+processing
+preview
+result display
+history display
+user feedback
+errors
+responsive interface
+```
+
+El frontend consume el contrato proporcionado por backend.
+
+---
+
+# 7. ARQUITECTURA DE KRONOS AI MEDIA
+
+La arquitectura conceptual es:
+
+```text
+KRONOS AI MEDIA
+        │
+        ├── Image Generation
+        │
+        ├── Video Generation
+        │
+        ├── Generation Status
+        │
+        ├── Generation Results
+        │
+        └── Generation History
+                 │
+                 ▼
+          Kronos Backend
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+   OpenAI             Google GenAI
+        │                 │
+        └────────┬────────┘
+                 ▼
+              Storage
+                 │
+                 ▼
+              MongoDB
+```
+
+La implementación real debe respetar la estructura existente del repositorio.
+
+---
+
+# 8. SEPARACIÓN DE IMAGEN Y VIDEO
+
+Imagen y video son capacidades relacionadas, pero no deben mezclarse indiscriminadamente.
+
+Separar:
+
+```text
+Image Generation
+Video Generation
+```
+
+Cada una puede tener:
+
+```text
+request
+validation
+processing
+status
+result
+error
+```
+
+propios.
+
+No crear una abstracción genérica si termina ocultando diferencias importantes entre imagen y video.
+
+---
+
+# 9. GENERACIÓN DE IMÁGENES
+
+Flujo:
+
+```text
+Prompt
+   ↓
+Frontend Validation
+   ↓
+Backend Validation
+   ↓
+AI Service
+   ↓
+AI Provider
+   ↓
+Image Result
+   ↓
+Storage
+   ↓
+MongoDB
+   ↓
+Frontend
+```
+
+El frontend debe considerar una generación completada solamente cuando el backend confirme el resultado.
+
+No utilizar resultados ficticios.
+
+---
+
+# 10. GENERACIÓN DE VIDEO
+
+El video puede requerir procesamiento prolongado o asíncrono.
+
+Flujo:
+
+```text
+Prompt
+   ↓
+Create Generation
+   ↓
+Backend
+   ↓
+AI Provider
+   ↓
+Generation Job
+   ↓
+Processing
+   ↓
+Completed / Failed
+   ↓
+Storage
+   ↓
+MongoDB
+   ↓
+Frontend
+```
+
+Nunca asumir que la respuesta inicial contiene inmediatamente el video final.
+
+La implementación debe adaptarse al proveedor realmente utilizado.
+
+---
+
+# 11. ESTADOS DE GENERACIÓN
+
+Los estados deben representar el estado real.
+
+Como mínimo, cuando correspondan:
+
+```text
+idle
+queued
+processing
+completed
+failed
+cancelled
+```
+
+No crear estados ficticios que no correspondan al backend.
+
+Ejemplo:
+
+```text
+queued
+   ↓
+processing
+   ↓
+completed
+```
+
+o:
+
+```text
+queued
+   ↓
+processing
+   ↓
+failed
+```
+
+---
+
+# 12. GENERACIONES ASÍNCRONAS
+
+Cuando el proveedor no entregue el resultado inmediatamente:
+
+```text
+Create Job
+    ↓
+Job ID
+    ↓
+Track Status
+    ↓
+Completed
+    ↓
+Retrieve Result
+```
+
+El seguimiento debe utilizar únicamente el mecanismo definido por Kronos:
+
+```text
+Socket.IO
+o
+API polling
+```
+
+No inventar otro sistema.
+
+---
+
+# 13. SOCKET.IO
+
+Kronos utiliza Socket.IO para funcionalidades de tiempo real.
+
+Cuando AI Media utilice eventos en tiempo real, los eventos deben coincidir exactamente con los definidos en backend.
+
+Conceptualmente:
+
+```text
+generation.created
+generation.processing
+generation.completed
+generation.failed
+```
+
+Los nombres anteriores son conceptuales.
+
+Los nombres definitivos deben provenir del backend real.
+
+Nunca crear eventos frontend que el servidor no emita.
+
+---
+
+# 14. POLLING
+
+Si una generación requiere polling:
+
+```text
+Create Generation
+      ↓
+Receive Generation ID
+      ↓
+Request Status
+      ↓
+Processing
+      ↓
+Request Status
+      ↓
+Completed / Failed
+```
+
+Debe existir:
+
+```text
+maximum attempts
+timeout
+cleanup
+stop on completed
+stop on failed
+```
+
+Nunca crear polling infinito.
+
+---
+
+# 15. PROMPTS
+
+Los prompts multimedia deben validarse.
 
 Validar:
 
 ```text
-exists
 type
+required
+trim
 minimum length
 maximum length
-allowed content
 ```
+
+El límite definitivo debe coincidir con el backend.
 
 Ejemplo:
 
@@ -135,202 +470,124 @@ export function validatePrompt(prompt) {
         throw new Error("Prompt must be a string");
     }
 
-    const normalizedPrompt = prompt.trim();
+    const normalized = prompt.trim();
 
-    if (!normalizedPrompt) {
+    if (!normalized) {
         throw new Error("Prompt cannot be empty");
     }
 
-    if (normalizedPrompt.length > 5000) {
+    if (normalized.length > 5000) {
         throw new Error("Prompt is too long");
     }
 
-    return normalizedPrompt;
+    return normalized;
 }
 ```
 
-Los límites definitivos deben coincidir con backend.
+La validación frontend nunca reemplaza la validación backend.
 
 ---
 
-# 6. GENERACIÓN DE IMÁGENES
+# 16. CONFIGURACIÓN DE GENERACIÓN
 
-El flujo debe ser:
+Las opciones deben corresponder a capacidades reales del backend/proveedor.
 
-```text
-Prompt
- ↓
-Validate
- ↓
-Generation Request
- ↓
-Backend
- ↓
-AI Provider
- ↓
-Result
- ↓
-Storage
- ↓
-Database
- ↓
-Frontend
-```
-
-El frontend debe mostrar claramente el estado:
-
-```text
-idle
-generating
-success
-error
-```
-
-No mostrar una generación como completada hasta recibir confirmación real.
-
----
-
-# 7. GENERACIÓN DE VIDEO
-
-El video puede requerir procesamiento asíncrono.
-
-Flujo:
-
-```text
-Create Generation
-       ↓
-Backend
-       ↓
-AI Provider
-       ↓
-Job Created
-       ↓
-Processing
-       ↓
-Completed
-       ↓
-Storage
-       ↓
-Frontend
-```
-
-Los estados deben representar correctamente el procesamiento:
-
-```text
-queued
-processing
-completed
-failed
-```
-
-No bloquear innecesariamente la interfaz mientras el proveedor procesa el video.
-
----
-
-# 8. JOBS ASÍNCRONOS
-
-Cuando una generación sea asíncrona:
-
-```javascript
-async function createGeneration(payload) {
-    try {
-        setStatus("generating");
-
-        const generation = await createAiGeneration(payload);
-
-        setGeneration(generation);
-    } catch (error) {
-        setStatus("error");
-
-        setError(
-            error instanceof Error
-                ? error.message
-                : "Generation failed"
-        );
-    }
-}
-```
-
-El estado real debe provenir del backend.
-
-No simular procesamiento mediante `setTimeout()`.
-
----
-
-# 9. ACTUALIZACIÓN DE ESTADO
-
-El estado de una generación debe actualizarse mediante:
-
-```text
-API polling
-o
-Socket.IO
-```
-
-según lo que implemente el backend.
-
-No inventar mecanismos paralelos.
-
-Si existe Socket.IO:
-
-```text
-Generation Created
-       ↓
-Socket Event
-       ↓
-Status Update
-       ↓
-Frontend State
-```
-
-Los listeners deben eliminarse correctamente.
-
----
-
-# 10. CONFIGURACIÓN DE GENERACIÓN
-
-Las opciones disponibles deben proceder del backend o de constantes controladas.
-
-Ejemplos conceptuales:
+Ejemplos:
 
 ```text
 model
-aspectRatio
+aspect ratio
 resolution
 duration
-style
 quality
+style
 ```
 
-No enviar parámetros que el proveedor/backend no soporte.
+No enviar parámetros arbitrarios.
 
-La configuración definitiva debe coincidir con el contrato real de la API.
+No inventar modelos.
+
+No asumir que una opción disponible para imágenes existe para video.
 
 ---
 
-# 11. VALIDACIÓN DE PARÁMETROS
+# 17. CONTRATO BACKEND ↔ FRONTEND
 
-Antes de enviar una generación:
+Antes de conectar una pantalla AI Media verificar:
+
+```text
+HTTP method
+endpoint
+authentication
+request body
+response body
+generation ID
+status
+result
+errors
+```
+
+El frontend debe consumir el contrato real.
+
+No modificar el backend únicamente para acomodar una suposición del frontend.
+
+---
+
+# 18. AUTENTICACIÓN
+
+Las generaciones multimedia pertenecen a usuarios autenticados cuando así lo establezca el backend.
+
+El flujo debe respetar:
+
+```text
+Authenticated User
+        ↓
+Authorized Request
+        ↓
+AI Generation
+```
+
+El backend es la autoridad final.
+
+Nunca confiar únicamente en:
 
 ```javascript
-function validateGenerationOptions(options) {
-    if (!options || typeof options !== "object") {
-        throw new Error("Invalid generation options");
-    }
-
-    return options;
-}
+isLoggedIn
 ```
 
-Las validaciones específicas deben aplicarse según el contrato real.
-
-Nunca confiar exclusivamente en la validación frontend.
+para proteger una generación.
 
 ---
 
-# 12. CONTROL DE GENERACIONES
+# 19. AUTORIZACIÓN
 
-Evitar solicitudes duplicadas.
+El backend debe controlar que el usuario pueda:
+
+```text
+create generation
+view generation
+view history
+delete generation
+```
+
+según las reglas reales del proyecto.
+
+El frontend puede ocultar botones, pero eso no constituye seguridad.
+
+---
+
+# 20. CONTROL DE DUPLICADOS
+
+Una generación puede consumir recursos externos.
+
+Por ello debe evitarse:
+
+```text
+double click
+duplicate submit
+duplicate retry
+multiple active requests
+```
 
 Ejemplo:
 
@@ -340,95 +597,13 @@ if (generating) {
 }
 ```
 
-El botón de generación debe permanecer bloqueado mientras una operación no permita una nueva solicitud.
-
-El backend también debe controlar duplicados y límites.
+El backend debe aplicar sus propias protecciones.
 
 ---
 
-# 13. CUOTAS Y LÍMITES
+# 21. ERRORES
 
-Si el backend devuelve:
-
-```text
-quota exceeded
-rate limit
-generation limit
-```
-
-el frontend debe mostrar un mensaje comprensible.
-
-No ocultar errores `429`.
-
-Ejemplo conceptual:
-
-```javascript
-if (error.status === 429) {
-    setError("Generation limit reached. Try again later.");
-}
-```
-
-El límite real pertenece al backend.
-
----
-
-# 14. RESULTADOS
-
-Los resultados deben utilizar URLs o referencias devueltas por backend.
-
-No construir URLs manualmente cuando el backend ya proporciona el recurso.
-
-Ejemplo:
-
-```javascript
-const mediaUrl = generation?.result?.url;
-
-if (!mediaUrl) {
-    throw new Error("Generation result is unavailable");
-}
-```
-
----
-
-# 15. PREVIEW
-
-Antes de mostrar un resultado:
-
-```text
-validate result
- ↓
-verify URL/reference
- ↓
-render media
-```
-
-Para imágenes:
-
-```html
-<img
-    src={imageUrl}
-    alt="AI generated result"
-/>
-```
-
-Para videos:
-
-```html
-<video
-    controls
-    preload="metadata"
->
-    <source src={videoUrl} />
-</video>
-```
-
-Los atributos definitivos deben adaptarse al proyecto.
-
----
-
-# 16. ERRORES
-
-Manejar como mínimo:
+La integración debe contemplar como mínimo:
 
 ```text
 400
@@ -441,423 +616,241 @@ Manejar como mínimo:
 500
 502
 503
-Network Error
-Timeout
-Provider Error
+timeout
+network error
+provider error
 ```
 
-No exponer información sensible del proveedor.
-
-El backend debe normalizar los errores antes de enviarlos al frontend cuando sea necesario.
+No mostrar al usuario secretos, stack traces ni información privada del proveedor.
 
 ---
 
-# 17. CANCELACIÓN
+# 22. ERRORES DE PROVEEDOR
 
-Cuando el backend y proveedor lo permitan, las operaciones largas deben poder cancelarse.
+Los errores externos deben ser normalizados por el backend cuando sea necesario.
+
+Frontend:
+
+```text
+Provider Error
+      ↓
+Kronos Error
+      ↓
+User Message
+```
+
+No exponer directamente respuestas técnicas del proveedor si contienen información innecesaria.
+
+---
+
+# 23. CUOTAS Y COSTOS
+
+Las generaciones de IA deben considerarse operaciones reales con consumo de recursos.
+
+Evitar:
+
+```text
+automatic generation loops
+uncontrolled retries
+duplicate requests
+infinite polling
+```
+
+Los límites deben estar controlados por backend.
+
+Si backend devuelve `429`, el frontend debe manejarlo correctamente.
+
+---
+
+# 24. RESULTADOS
+
+Los resultados deben provenir del backend.
+
+Ejemplo:
+
+```javascript
+const resultUrl = generation?.result?.url;
+```
+
+No construir manualmente URLs privadas si backend ya proporciona una referencia.
+
+El resultado debe validarse antes de renderizarse.
+
+---
+
+# 25. STORAGE
+
+La multimedia generada debe pasar por el sistema de almacenamiento configurado por Kronos.
 
 Flujo:
 
 ```text
-Generating
-   ↓
-Cancel
-   ↓
-Backend
-   ↓
-Provider
-   ↓
-Cancelled
-   ↓
-Frontend
+AI Provider
+      ↓
+Kronos Backend
+      ↓
+Storage
+      ↓
+Stored Reference
+      ↓
+MongoDB
 ```
 
-No simular una cancelación únicamente ocultando el componente.
+Las credenciales privadas de storage permanecen en backend.
 
 ---
 
-# 18. HISTORIAL
+# 26. MONGODB
 
-Las generaciones completadas deben poder consultarse desde backend cuando el proyecto lo soporte.
+MongoDB no debe ser accesible directamente desde frontend.
 
-Separar:
+La persistencia debe seguir:
+
+```text
+Frontend
+   ↓
+Backend
+   ↓
+Mongoose
+   ↓
+MongoDB
+```
+
+La información que puede persistirse incluye, según los modelos reales:
+
+```text
+user
+generation
+type
+prompt metadata
+status
+result reference
+createdAt
+updatedAt
+```
+
+No inventar campos si no existen en el modelo.
+
+---
+
+# 27. HISTORIAL
+
+El historial debe utilizar datos reales persistidos por backend.
+
+Debe separar:
 
 ```text
 Current Generation
 Generation History
 ```
 
-No almacenar indefinidamente todo el historial únicamente en memoria del navegador.
+El historial no debe depender exclusivamente del estado React del navegador.
 
 ---
 
-# 19. PAGINACIÓN DEL HISTORIAL
+# 28. PAGINACIÓN DEL HISTORIAL
 
-Cuando exista paginación:
+Si el endpoint soporta paginación:
 
 ```text
-History Page 1
-      ↓
+Page 1
+   ↓
 Load More
-      ↓
-History Page 2
+   ↓
+Page 2
+   ↓
+Append
 ```
 
-No sobrescribir resultados anteriores.
+No reemplazar innecesariamente todo el historial.
 
-Evitar duplicados mediante identificadores únicos.
+Evitar duplicados utilizando el identificador real de generación.
 
 ---
 
-# 20. ALMACENAMIENTO
+# 29. PREVIEW DE IMAGEN
 
-Los resultados generados deben utilizar el sistema de almacenamiento configurado para Kronos.
-
-El frontend no debe conocer credenciales privadas de almacenamiento.
-
-Flujo:
-
-```text
-AI Provider
-     ↓
-Backend
-     ↓
-Storage
-     ↓
-Stored URL / Reference
-     ↓
-Database
-     ↓
-Frontend
-```
-
----
-
-# 21. BASE DE DATOS
-
-El frontend no accede directamente a MongoDB.
-
-Siempre:
-
-```text
-Frontend
- ↓
-Backend
- ↓
-MongoDB
-```
-
-La información persistente debe ser controlada por backend.
-
----
-
-# 22. REINTENTOS
-
-Los reintentos deben utilizarse solamente cuando tenga sentido.
-
-No repetir automáticamente operaciones que puedan generar costos o resultados duplicados.
-
-Antes de reintentar:
-
-```text
-identify error
- ↓
-determine retryable
- ↓
-retry if safe
-```
-
-Los errores de validación no deben reintentarse automáticamente.
-
----
-
-# 23. ESTADOS DE UI
-
-Toda pantalla de IA debe contemplar:
-
-```text
-idle
-loading
-processing
-success
-empty
-error
-```
-
-El estado debe ser visible para el usuario.
-
-No dejar la interfaz aparentemente congelada durante una generación.
-
----
-
-# 24. DISEÑO VISUAL
-
-La sección AI Media utiliza:
-
-```text
-Deep Black
-+
-Bright Copper Chrome
-```
-
-Los elementos principales deben conservar la identidad:
-
-```text
-buttons
-borders
-inputs
-cards
-bars
-icons
-progress
-results
-```
-
-El acabado debe ser:
-
-**cobre cromado brillante, minimalista y tipo espejo.**
-
----
-
-# 25. COMPONENTES
-
-Preferir componentes especializados:
-
-```text
-PromptInput
-GenerationControls
-ImageGenerator
-VideoGenerator
-GenerationProgress
-GenerationResult
-GenerationHistory
-MediaPreview
-GenerationError
-```
-
-No crear componentes duplicados si ya existe una implementación equivalente.
-
----
-
-# 26. RESPONSIVE
-
-La interfaz debe funcionar en:
-
-```text
-mobile
-tablet
-desktop
-```
-
-Los controles de generación deben permanecer utilizables en pantallas pequeñas.
-
-Los previews multimedia deben adaptarse al contenedor disponible.
-
----
-
-# 27. ACCESIBILIDAD
-
-Los controles deben tener:
-
-* labels;
-* estados de disabled;
-* mensajes de error;
-* feedback de procesamiento;
-* texto alternativo;
-* controles de video accesibles.
-
-Los botones deben utilizar elementos semánticos.
-
----
-
-# 28. RENDIMIENTO
-
-Optimizar:
-
-* previews;
-* renders;
-* consultas;
-* historial;
-* eventos Socket.IO;
-* carga multimedia.
-
-No descargar nuevamente un recurso que ya esté disponible en memoria cuando pueda evitarse de manera segura.
-
----
-
-# 29. MEMORIA DEL NAVEGADOR
-
-Los `ObjectURL` creados mediante:
-
-```javascript
-URL.createObjectURL(...)
-```
-
-deben liberarse cuando ya no sean necesarios:
-
-```javascript
-URL.revokeObjectURL(url);
-```
-
-Evitar acumulación de blobs.
-
----
-
-# 30. ERRORES DE RED
-
-Las operaciones deben distinguir entre:
-
-```text
-server error
-network error
-timeout
-validation error
-provider error
-```
-
-Los mensajes de UI deben ser apropiados para cada caso.
-
----
-
-# 31. INTEGRACIÓN CON BACKEND
-
-Antes de implementar un servicio de IA verificar:
-
-```text
-HTTP method
-endpoint
-authentication
-request schema
-response schema
-status codes
-error schema
-```
-
-No asumir contratos.
-
----
-
-# 32. INTEGRACIÓN CON SOCKET.IO
-
-Si el backend utiliza eventos para generaciones:
-
-```text
-generation.created
-generation.processing
-generation.completed
-generation.failed
-```
-
-Los nombres reales deben coincidir exactamente con el backend.
-
-No crear eventos inexistentes.
-
----
-
-# 33. SEGURIDAD
-
-Nunca ejecutar contenido recibido de un proveedor como código.
-
-Nunca utilizar:
-
-```javascript
-eval(...)
-```
-
-para procesar resultados.
-
-Sanitizar cualquier contenido que pueda terminar renderizándose como HTML.
-
----
-
-# 34. COSTOS
-
-Las operaciones que puedan consumir recursos externos deben tratarse como operaciones reales.
-
-No ejecutar automáticamente múltiples generaciones por accidente.
-
-El frontend debe evitar:
-
-```text
-double click
-duplicate request
-automatic retry loops
-infinite polling
-```
-
----
-
-# 35. POLLING
-
-Cuando no exista Socket.IO y el backend utilice polling:
-
-```text
-Create Job
- ↓
-Poll Status
- ↓
-Processing
- ↓
-Poll Status
- ↓
-Completed
-```
-
-Debe existir:
-
-```text
-maximum attempts
-cleanup
-timeout
-stop on completed
-stop on failed
-```
-
-Nunca crear polling infinito.
-
----
-
-# 36. POLLING SEGURO
+Las imágenes deben renderizarse mediante referencias válidas proporcionadas por backend.
 
 Ejemplo:
 
-```javascript
-async function waitForGeneration(getStatus, {
-    interval = 3000,
-    maxAttempts = 100,
-} = {}) {
-    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-        const result = await getStatus();
-
-        if (
-            result.status === "completed" ||
-            result.status === "failed"
-        ) {
-            return result;
-        }
-
-        await new Promise((resolve) => {
-            setTimeout(resolve, interval);
-        });
-    }
-
-    throw new Error("Generation polling timed out");
-}
+```html
+<img
+    src={imageUrl}
+    alt="AI generated result"
+/>
 ```
 
-La implementación definitiva debe adaptarse al servicio real.
+El `alt` debe ser apropiado para el contexto.
 
 ---
 
-# 37. LIMPIEZA DE RECURSOS
+# 30. PREVIEW DE VIDEO
 
-Al desmontar una pantalla:
+Los videos deben utilizar controles accesibles.
+
+Ejemplo:
+
+```html
+<video
+    controls
+    preload="metadata"
+>
+    <source src={videoUrl} />
+</video>
+```
+
+No descargar archivos innecesariamente.
+
+---
+
+# 31. CANCELACIÓN
+
+Cuando la arquitectura backend/proveedor lo permita:
 
 ```text
-cancel pending requests
-remove socket listeners
+Generation
+    ↓
+Cancel Request
+    ↓
+Backend
+    ↓
+Provider
+    ↓
+Cancelled
+```
+
+Ocultar una generación en frontend no equivale a cancelarla.
+
+---
+
+# 32. REINTENTOS
+
+No todas las generaciones deben reintentarse.
+
+Reintentar únicamente cuando:
+
+```text
+error is retryable
+operation is safe
+backend/provider allows retry
+```
+
+Nunca reintentar automáticamente errores de validación.
+
+Nunca crear loops de retry.
+
+---
+
+# 33. LIMPIEZA FRONTEND
+
+Cuando el componente AI Media se desmonte:
+
+```text
+remove Socket.IO listeners
 stop polling
-release object URLs
+cancel pending requests
+release ObjectURLs
 clear temporary state
 ```
 
@@ -865,77 +858,222 @@ cuando corresponda.
 
 ---
 
-# 38. REFACTORIZACIÓN
+# 34. ARQUITECTURA FRONTEND
 
-Cuando exista código duplicado:
+Preferir separación:
 
-1. localizar servicios;
-2. localizar hooks;
-3. identificar comportamiento común;
-4. extraer abstracción;
-5. reemplazar duplicados;
-6. comprobar imports;
-7. ejecutar build.
+```text
+AI Media
+├── components/
+├── hooks/
+├── services/
+├── types/
+├── utils/
+└── constants/
+```
 
-No modificar contratos externos sin necesidad.
+Ejemplos conceptuales:
+
+```text
+PromptInput
+ImageGenerator
+VideoGenerator
+GenerationControls
+GenerationProgress
+GenerationResult
+GenerationHistory
+MediaPreview
+GenerationError
+```
+
+No duplicar componentes existentes en Kronos.
 
 ---
 
-# 39. VALIDACIÓN FINAL
+# 35. INTEGRACIÓN CON KRONOS FRONTEND
 
-Una implementación AI Media terminada debe comprobar:
+La implementación debe respetar `kronos-frontend`.
+
+Flujo:
 
 ```text
-✓ Prompt validation
-✓ Image generation
-✓ Video generation
-✓ Generation states
-✓ API integration
+Screen
+   ↓
+Component
+   ↓
+Hook
+   ↓
+AI Media Service
+   ↓
+Kronos Backend
+```
+
+No colocar llamadas arbitrarias a proveedores dentro de componentes.
+
+---
+
+# 36. SEPARACIÓN DE KRONOS SOCIAL
+
+AI Media no debe modificar directamente la lógica de:
+
+```text
+Feed
+Posts
+Comments
+Likes
+Follow
+Messages
+Notifications
+```
+
+Si una generación debe publicarse posteriormente en la red social:
+
+```text
+AI Media Result
+      ↓
+User Action
+      ↓
+Social Create Post
+```
+
+La publicación pertenece a `kronos-social`.
+
+---
+
+# 37. SEPARACIÓN DE KRONOS AI SCRIPT
+
+La generación de:
+
+```text
+scripts
+screenplays
+dialogues
+scenes
+characters
+story structures
+```
+
+pertenece a:
+
+```text
+KRONOS AI SCRIPT
+```
+
+AI Media solamente maneja:
+
+```text
+images
+videos
+multimedia generation
+```
+
+No mezclar ambos dominios.
+
+---
+
+# 38. DISEÑO VISUAL KRONOS
+
+La identidad de AI Media debe respetar:
+
+```text
+DEEP BLACK
++
+BRIGHT COPPER CHROME
+```
+
+El cobre cromado brillante es la identidad visual de esta área.
+
+Aplicarlo principalmente a:
+
+```text
+buttons
+borders
+inputs
+cards
+controls
+icons
+progress
+generation panels
+```
+
+No utilizar el plateado de Social como identidad principal de AI Media.
+
+No utilizar el rosa de AI Script como identidad principal de AI Media.
+
+---
+
+# 39. PRODUCCIÓN
+
+La implementación debe ser compatible con la arquitectura de despliegue de Kronos:
+
+```text
+Frontend
+   ↓
+Vercel
+   ↓
+Kronos Backend
+   ↓
+Render
+   ↓
+MongoDB Atlas
+```
+
+La configuración concreta debe utilizar las variables de entorno y servicios realmente presentes en el repositorio.
+
+Antes de producción comprobar:
+
+```text
+✓ Environment variables
+✓ API URL
 ✓ Authentication
+✓ AI provider configuration
+✓ Storage
+✓ MongoDB
+✓ Socket.IO
+✓ CORS
+✓ Timeouts
 ✓ Error handling
-✓ Rate limits
-✓ Results
-✓ Storage references
-✓ History
-✓ Socket.IO / polling
-✓ Duplicate prevention
-✓ Responsive UI
-✓ Security
-✓ Production build
+✓ Build
 ```
 
 ---
 
 # 40. OBJETIVO FINAL
 
-Kronos AI Media debe proporcionar una experiencia completa de generación multimedia:
+Kronos AI Media debe proporcionar una plataforma real de generación multimedia integrada al ecosistema Kronos:
 
 ```text
-                  KRONOS AI MEDIA
-                         │
-             ┌───────────┴───────────┐
-             │                       │
-        IMAGE AI                 VIDEO AI
-             │                       │
-             └───────────┬───────────┘
-                         ▼
-                    AI SERVICE
-                         │
-                         ▼
-                   KRONOS BACKEND
-                         │
-              ┌──────────┼──────────┐
-              ▼          ▼          ▼
-          AI Provider  Storage    MongoDB
-              │
-              ▼
-           Result
-              │
-              ▼
-          Kronos UI
+                         KRONOS SOCIAL AI
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                 │
+              ▼                 ▼                 ▼
+        KRONOS SOCIAL     KRONOS AI MEDIA   KRONOS AI SCRIPT
+                                │
+                       ┌────────┴────────┐
+                       ▼                 ▼
+                  IMAGE AI           VIDEO AI
+                       │                 │
+                       └────────┬────────┘
+                                ▼
+                         KRONOS BACKEND
+                                │
+                    ┌───────────┼───────────┐
+                    ▼           ▼           ▼
+                 OpenAI    Google GenAI   Socket.IO
+                                │
+                                ▼
+                             Storage
+                                │
+                                ▼
+                            MongoDB
+                                │
+                                ▼
+                         KRONOS FRONTEND
 ```
 
-La prioridad es:
+La prioridad de esta skill es:
 
-**seguridad de claves → backend real → generación confiable → procesamiento asíncrono → almacenamiento → historial → experiencia de usuario → producción.**
+**Kronos real → backend real → proveedores reales → generación segura → procesamiento confiable → almacenamiento → MongoDB → tiempo real → frontend integrado → producción.**
 
+No crear funcionalidades ficticias, no introducir proveedores innecesarios, no duplicar arquitectura y no mezclar AI Media con Social o AI Script.
