@@ -12,18 +12,22 @@ import ScriptGenerator from "./features/script-ai/ScriptGenerator";
 import VideoGenerator from "./features/video-ai/VideoGenerator";
 import AICenter from "./features/ai/AICenter";
 import SocialPage from "./features/social/SocialPage";
+import PostDetail from "./features/social/PostDetail";
 import UserSearch from "./features/users/UserSearch";
+import Profile from "./features/users/Profile";
 
 function AppContent() {
   const [user, setUser] = useState(() => {
     try {
-      const token = localStorage.getItem("kronos_token");
+      const token =
+        localStorage.getItem("kronos_token");
 
       if (!token) {
         return null;
       }
 
-      const storedUser = localStorage.getItem("kronos_user");
+      const storedUser =
+        localStorage.getItem("kronos_user");
 
       if (!storedUser) {
         return null;
@@ -31,7 +35,10 @@ function AppContent() {
 
       return JSON.parse(storedUser);
     } catch (error) {
-      console.error("KRONOS_USER_LOAD_ERROR:", error);
+      console.error(
+        "KRONOS_USER_LOAD_ERROR:",
+        error
+      );
 
       localStorage.removeItem("kronos_token");
       localStorage.removeItem("kronos_user");
@@ -48,22 +55,40 @@ function AppContent() {
     try {
       localStorage.removeItem("kronos_token");
       localStorage.removeItem("kronos_user");
+
       setUser(null);
     } catch (error) {
-      console.error("KRONOS_LOGOUT_ERROR:", error);
+      console.error(
+        "KRONOS_LOGOUT_ERROR:",
+        error
+      );
     }
   }
 
   if (!user) {
-    return <Auth onLogin={handleLogin} />;
+    return (
+      <Auth onLogin={handleLogin} />
+    );
   }
 
   return (
     <BrowserRouter>
       <nav className="navbar">
-        <Link to="/">Inicio</Link>
+        <Link to="/">
+          Inicio
+        </Link>
 
-        <Link to="/ai">IA</Link>
+        <Link to="/users">
+          Explorar
+        </Link>
+
+        <Link to="/profile">
+          Perfil
+        </Link>
+
+        <Link to="/ai">
+          IA
+        </Link>
 
         <Link to="/ai/image">
           Imagen
@@ -81,10 +106,6 @@ function AppContent() {
           Social
         </Link>
 
-        <Link to="/users">
-          Usuarios
-        </Link>
-
         <button
           type="button"
           onClick={logout}
@@ -94,46 +115,54 @@ function AppContent() {
       </nav>
 
       <Routes>
-        {/* Inicio = Feed principal */}
         <Route
           path="/"
           element={<SocialPage />}
         />
 
-        {/* Centro de IA */}
         <Route
           path="/ai"
           element={<AICenter />}
         />
 
-        {/* Generador de imágenes */}
         <Route
           path="/ai/image"
           element={<ImageGenerator />}
         />
 
-        {/* Generador de guiones */}
         <Route
           path="/ai/script"
           element={<ScriptGenerator />}
         />
 
-        {/* Generador de videos */}
         <Route
           path="/ai/video"
           element={<VideoGenerator />}
         />
 
-        {/* Red social */}
         <Route
           path="/social"
           element={<SocialPage />}
         />
 
-        {/* Búsqueda de usuarios */}
+        <Route
+          path="/post/:id"
+          element={<PostDetail />}
+        />
+
         <Route
           path="/users"
           element={<UserSearch />}
+        />
+
+        <Route
+          path="/profile"
+          element={<Profile />}
+        />
+
+        <Route
+          path="/users/:id"
+          element={<Profile />}
         />
       </Routes>
     </BrowserRouter>
@@ -143,3 +172,4 @@ function AppContent() {
 export default function App() {
   return <AppContent />;
 }
+
