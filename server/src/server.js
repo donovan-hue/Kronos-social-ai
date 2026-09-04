@@ -167,42 +167,49 @@ const io = new Server(server, {
     credentials: true
   }
 });
+
+io.use((socket, next) => {
+  const token =
+    socket.handshake.auth?.token ||
+    socket.handshake.headers.authorization;
+
+  if (
+    typeof token !== "string" ||
+    !token.trim()
+  ) {
+    return next(new Error("AUTH_REQUIRED"));
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token.replace(/^Bearer\s+/i, "").trim(),
+      process.env.JWT_SECRET,
+      {
+        algorithms: ["HS256"]
+      }
+    );
+
+    if (
+      typeof decoded.id !== "string" ||
+      !decoded.id.trim()
+    ) {
+      return next(new Error("AUTH_INVALID"));
+    }
+
+    socket.userId = decoded.id;
+    return next();
+  } catch {
+    return next(new Error("AUTH_INVALID"));
+  }
+});
+
 app.set("io", io);
 io.on("connection", (socket) => {
   console.log(
     `Socket conectado: ${socket.id}`
   );
 
-  socket.on("authenticate", (token) => {
-    if (
-      typeof token !== "string" ||
-      !token.trim()
-    ) {
-      socket.disconnect(true);
-      return;
-    }
-
-    try {
-      const decoded = jwt.verify(
-  token.replace(/^Bearer\s+/i, "").trim(),
-  process.env.JWT_SECRET,
-  {
-    algorithms: ["HS256"]
-  }
-);
-
-if (
-  typeof decoded.id !== "string" ||
-  !decoded.id.trim()
-) {
-  socket.disconnect(true);
-  return;
-}
-      socket.join(`user:${decoded.id}`);
-    } catch {
-      socket.disconnect(true);
-    }
-  });
+  socket.join(`user:${socket.userId}`);
 
   socket.on("disconnect", () => {
     console.log(

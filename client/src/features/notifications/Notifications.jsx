@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { getSocket } from "../../services/socket";
 
 const API =
   import.meta.env.VITE_API_URL ||
@@ -149,6 +150,46 @@ export default function Notifications() {
 
   useEffect(() => {
     loadNotifications();
+  }, []);
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    if (!socket) {
+      return undefined;
+    }
+
+    function handleNewNotification(notification) {
+      if (!notification?._id) {
+        return;
+      }
+
+      setNotifications((currentNotifications) => {
+        const alreadyExists = currentNotifications.some(
+          (currentNotification) =>
+            currentNotification._id === notification._id
+        );
+
+        if (alreadyExists) {
+          return currentNotifications;
+        }
+
+        setUnreadCount((current) => current + 1);
+        return [notification, ...currentNotifications];
+      });
+    }
+
+    socket.on(
+      "notification:new",
+      handleNewNotification
+    );
+
+    return () => {
+      socket.off(
+        "notification:new",
+        handleNewNotification
+      );
+    };
   }, []);
 
   if (loading) {

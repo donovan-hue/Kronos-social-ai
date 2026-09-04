@@ -22,6 +22,10 @@ import Messages from "./features/messages/Messages";
 import Notifications from "./features/notifications/Notifications";
 import CreatePost from "./features/social/CreatePost";
 import Settings from "./features/settings/Settings";
+import {
+  connectSocket,
+  disconnectSocket,
+} from "./services/socket";
 
 function AppContent() {
   const [user, setUser] = useState(() => {
@@ -76,6 +80,21 @@ function AppContent() {
       );
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      disconnectSocket();
+      return undefined;
+    }
+
+    connectSocket(
+      localStorage.getItem("kronos_token")
+    );
+
+    return () => {
+      disconnectSocket();
+    };
+  }, [user]);
 
   function handleLogin(loggedUser) {
     setUser(loggedUser);

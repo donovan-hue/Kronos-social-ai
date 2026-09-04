@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { getSocket } from "../../services/socket";
 
 const API =
   import.meta.env.VITE_API_URL ||
@@ -219,6 +220,49 @@ export default function Messages() {
       loadConversations();
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      return undefined;
+    }
+
+    const socket = getSocket();
+
+    if (!socket) {
+      return undefined;
+    }
+
+    function handleNewMessage(message) {
+      const senderId = String(
+        message?.sender?._id || message?.sender || ""
+      );
+      const receiverId = String(
+        message?.receiver?._id || message?.receiver || ""
+      );
+      const isCurrentConversation =
+        (senderId === currentUserId && receiverId === String(userId)) ||
+        (receiverId === currentUserId && senderId === String(userId));
+
+      if (!isCurrentConversation || !message?._id) {
+        return;
+      }
+
+      setMessages((currentMessages) =>
+        currentMessages.some(
+          (currentMessage) =>
+            currentMessage._id === message._id
+        )
+          ? currentMessages
+          : [...currentMessages, message]
+      );
+    }
+
+    socket.on("message:new", handleNewMessage);
+
+    return () => {
+      socket.off("message:new", handleNewMessage);
+    };
+  }, [currentUserId, userId]);
 
   if (loading) {
     return (
