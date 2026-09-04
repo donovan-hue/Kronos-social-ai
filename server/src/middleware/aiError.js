@@ -31,6 +31,10 @@ const AI_ERRORS = {
     status: 503,
     message: "El proveedor de guiones no está disponible"
   },
+  SCRIPT_INVALID_RESPONSE: {
+    status: 502,
+    message: "El proveedor de guiones devolvió una respuesta inválida"
+  },
   VIDEO_PROVIDER_UNAVAILABLE: {
     status: 503,
     message: "El proveedor de video no está disponible"

@@ -21,7 +21,16 @@ const imageGenerationSchema = new mongoose.Schema(
       type: String,
       default: "openrouter"
     },
+    status: {
+      type: String,
+      enum: ["queued", "processing", "completed", "failed"],
+      default: "queued"
+    },
     imageUrl: {
+      type: String,
+      default: ""
+    },
+    error: {
       type: String,
       default: ""
     }

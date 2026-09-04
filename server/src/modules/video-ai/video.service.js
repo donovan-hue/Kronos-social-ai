@@ -2,7 +2,7 @@ const {
   getAIProviderConfig
 } = require("../../config/aiProviders");
 
-async function generateVideo(prompt) {
+async function generateVideo(prompt, apiKey) {
   if (
     typeof prompt !== "string" ||
     !prompt.trim()
@@ -31,7 +31,7 @@ try {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${VIDEO_API_KEY}`
+      Authorization: `Bearer ${apiKey}`
     },
     body: JSON.stringify({
       model: provider.model,

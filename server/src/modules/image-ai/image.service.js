@@ -19,16 +19,25 @@ async function generateImage({ prompt, userId }) {
   const provider =
     getAIProviderConfig("image");
 
+  const generation = await ImageGeneration.create({
+    user: userId,
+    prompt: prompt.trim(),
+    model: provider.model,
+    provider: provider.provider,
+    status: "processing"
+  });
+
   if (!provider.configured) {
-    await ImageGeneration.create({
-      user: userId,
-      prompt: prompt.trim(),
-      model: provider.model,
-      provider: provider.provider
+    await ImageGeneration.findByIdAndUpdate(generation._id, {
+      status: "failed",
+      error: "IMAGE_PROVIDER_NOT_CONFIGURED"
     });
 
     return {
+      id: generation._id,
+      generationId: generation._id,
       url: "",
+      status: "failed",
       development: true,
       model: provider.model,
       provider: provider.provider,
@@ -47,25 +56,34 @@ async function generateImage({ prompt, userId }) {
       "X-Title": "Kronos Social AI"
     }
   });
- let response;
+  let response;
 
-try {
-  response = await client.images.generate({
-    model: provider.model,
-    prompt: prompt.trim(),
-    size: "1024x1024"
-  });
-} catch (error) {
-  console.error(
-    "IMAGE_PROVIDER_ERROR:",
-    error?.message || error
-  );
+  try {
+    response = await client.images.generate({
+      model: provider.model,
+      prompt: prompt.trim(),
+      size: "1024x1024"
+    });
+  } catch (error) {
+    console.error(
+      "IMAGE_PROVIDER_ERROR:",
+      error?.message || error
+    );
 
-  throw new Error("IMAGE_PROVIDER_UNAVAILABLE");
-}
+    await ImageGeneration.findByIdAndUpdate(generation._id, {
+      status: "failed",
+      error: "IMAGE_PROVIDER_UNAVAILABLE"
+    });
+
+    throw new Error("IMAGE_PROVIDER_UNAVAILABLE");
+  }
   const image = response.data?.[0];
 
   if (!image) {
+    await ImageGeneration.findByIdAndUpdate(generation._id, {
+      status: "failed",
+      error: "OPENROUTER_NO_IMAGE"
+    });
     throw new Error("OPENROUTER_NO_IMAGE");
   }
 
@@ -76,21 +94,26 @@ try {
   } else if (image.b64_json) {
     url = `data:image/png;base64,${image.b64_json}`;
   } else {
+    await ImageGeneration.findByIdAndUpdate(generation._id, {
+      status: "failed",
+      error: "OPENROUTER_IMAGE_FORMAT_UNKNOWN"
+    });
     throw new Error(
       "OPENROUTER_IMAGE_FORMAT_UNKNOWN"
     );
   }
 
-  await ImageGeneration.create({
-    user: userId,
-    prompt: prompt.trim(),
-    model: provider.model,
-    provider: provider.provider,
-    imageUrl: url
+  await ImageGeneration.findByIdAndUpdate(generation._id, {
+    status: "completed",
+    imageUrl: url,
+    error: ""
   });
 
   return {
+    id: generation._id,
+    generationId: generation._id,
     url,
+    status: "completed",
     development: false,
     model: provider.model,
     provider: provider.provider
@@ -110,16 +133,20 @@ async function uploadImage({ file, userId }) {
     `data:${file.mimetype};base64,` +
     file.buffer.toString("base64");
 
-  await ImageGeneration.create({
+  const generation = await ImageGeneration.create({
     user: userId,
     prompt: "Imagen subida por el usuario",
     model: "upload",
     provider: "upload",
+    status: "completed",
     imageUrl
   });
 
   return {
+    id: generation._id,
+    generationId: generation._id,
     url: imageUrl,
+    status: "completed",
     development: false,
     model: "upload"
   };
