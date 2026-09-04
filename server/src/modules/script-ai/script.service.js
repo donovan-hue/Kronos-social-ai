@@ -5,6 +5,7 @@ const {
 
 const MAX_PROMPT_LENGTH = 10000;
 const MAX_OUTPUT_TOKENS = 3000;
+const PROVIDER_TIMEOUT_MS = 45000;
 const SCRIPT_TYPES = new Set([
   "video",
   "reel",
@@ -23,55 +24,70 @@ function normalizeScriptStructure(value) {
   if (
     typeof value.title !== "string" ||
     !value.title.trim() ||
+    typeof value.logline !== "string" ||
+    !value.narrative ||
+    typeof value.narrative !== "object" ||
+    typeof value.narrative.beginning !== "string" ||
+    typeof value.narrative.middle !== "string" ||
+    typeof value.narrative.ending !== "string" ||
+    typeof value.closing !== "string" ||
     !Array.isArray(value.scenes) ||
     value.scenes.length === 0
   ) {
     throw new Error("SCRIPT_INVALID_RESPONSE");
   }
 
-  const scenes = value.scenes.map((scene, index) => ({
-    number: Number.isInteger(scene?.number)
-      ? scene.number
-      : index + 1,
-    heading: typeof scene?.heading === "string"
-      ? scene.heading.trim()
-      : "",
-    action: typeof scene?.action === "string"
-      ? scene.action.trim()
-      : "",
-    characters: Array.isArray(scene?.characters)
-      ? scene.characters.filter(
-          character => typeof character === "string"
-        )
-      : [],
-    dialogue: Array.isArray(scene?.dialogue)
-      ? scene.dialogue
-          .filter(line => line && typeof line === "object")
-          .map(line => ({
-            character: typeof line.character === "string"
-              ? line.character.trim()
-              : "",
-            text: typeof line.text === "string"
-              ? line.text.trim()
-              : "",
-            direction: typeof line.direction === "string"
-              ? line.direction.trim()
-              : ""
-          }))
-      : [],
-    directions: typeof scene?.directions === "string"
-      ? scene.directions.trim()
-      : "",
-    transition: typeof scene?.transition === "string"
-      ? scene.transition.trim()
-      : ""
-  }));
+  const scenes = value.scenes.map((scene, index) => {
+    if (
+      !scene ||
+      typeof scene !== "object" ||
+      typeof scene.heading !== "string" ||
+      typeof scene.action !== "string" ||
+      !Array.isArray(scene.characters) ||
+      !scene.characters.every(
+        character => typeof character === "string"
+      ) ||
+      !Array.isArray(scene.dialogue) ||
+      typeof scene.directions !== "string" ||
+      typeof scene.transition !== "string"
+    ) {
+      throw new Error("SCRIPT_INVALID_RESPONSE");
+    }
+
+    return {
+      number: Number.isInteger(scene?.number)
+        ? scene.number
+        : index + 1,
+      heading: scene.heading.trim(),
+      action: scene.action.trim(),
+      characters: scene.characters.map(
+        character => character.trim()
+      ),
+      dialogue: scene.dialogue.map(line => {
+        if (
+          !line ||
+          typeof line !== "object" ||
+          typeof line.character !== "string" ||
+          typeof line.text !== "string" ||
+          typeof line.direction !== "string"
+        ) {
+          throw new Error("SCRIPT_INVALID_RESPONSE");
+        }
+
+        return {
+          character: line.character.trim(),
+          text: line.text.trim(),
+          direction: line.direction.trim()
+        };
+      }),
+      directions: scene.directions.trim(),
+      transition: scene.transition.trim()
+    };
+  });
 
   return {
     title: value.title.trim(),
-    logline: typeof value.logline === "string"
-      ? value.logline.trim()
-      : "",
+    logline: value.logline.trim(),
     narrative: {
       beginning: typeof value.narrative?.beginning === "string"
         ? value.narrative.beginning.trim()
@@ -168,6 +184,7 @@ async function generateScript({
   const client = new OpenAI({
     apiKey: provider.apiKey,
     baseURL: "https://openrouter.ai/api/v1",
+    timeout: PROVIDER_TIMEOUT_MS,
     defaultHeaders: {
       "HTTP-Referer":
         process.env.CLIENT_URL ||
@@ -197,6 +214,12 @@ async function generateScript({
           }
         ]
       });
+
+    if (
+      response.choices?.[0]?.finish_reason === "length"
+    ) {
+      throw new Error("SCRIPT_INCOMPLETE_RESPONSE");
+    }
 
     const rawContent =
       response.choices?.[0]?.message?.content;
@@ -233,8 +256,17 @@ async function generateScript({
       error?.message || error
     );
 
-    if (error?.message === "SCRIPT_INVALID_RESPONSE") {
+    if (
+      error?.message === "SCRIPT_INVALID_RESPONSE" ||
+      error?.message === "SCRIPT_INCOMPLETE_RESPONSE"
+    ) {
       throw error;
+    }
+
+    if (error?.name === "APIConnectionTimeoutError" ||
+        error?.code === "ETIMEDOUT" ||
+        error?.status === 408) {
+      throw new Error("SCRIPT_PROVIDER_TIMEOUT");
     }
 
     throw new Error("SCRIPT_PROVIDER_ERROR");

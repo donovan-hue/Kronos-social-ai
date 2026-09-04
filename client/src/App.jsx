@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
   Route,
   Link,
 } from "react-router-dom";
+import axios from "axios";
 
 import Auth from "./features/auth/Auth";
 import ImageGenerator from "./features/image-ai/ImageGenerator";
@@ -52,6 +53,29 @@ function AppContent() {
       return null;
     }
   });
+
+  useEffect(() => {
+    const axiosInterceptor =
+      axios.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          if (error.response?.status === 401) {
+            console.warn(
+              "AUTH_SESSION_EXPIRED:",
+              error.response?.data?.code || "UNKNOWN"
+            );
+            logout();
+          }
+          return Promise.reject(error);
+        }
+      );
+
+    return () => {
+      axios.interceptors.response.eject(
+        axiosInterceptor
+      );
+    };
+  }, []);
 
   function handleLogin(loggedUser) {
     setUser(loggedUser);

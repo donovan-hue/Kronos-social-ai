@@ -31,6 +31,14 @@ const AI_ERRORS = {
     status: 503,
     message: "El proveedor de guiones no está disponible"
   },
+  SCRIPT_PROVIDER_TIMEOUT: {
+    status: 504,
+    message: "El proveedor de guiones tardó demasiado en responder"
+  },
+  SCRIPT_INCOMPLETE_RESPONSE: {
+    status: 502,
+    message: "El proveedor de guiones devolvió una respuesta incompleta"
+  },
   SCRIPT_INVALID_RESPONSE: {
     status: 502,
     message: "El proveedor de guiones devolvió una respuesta inválida"

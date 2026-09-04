@@ -7,6 +7,41 @@ const { createNotification } = require("../notifications/notification.service");
 
 const router = express.Router();
 
+router.get("/user/:userId", auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!validId(userId)) {
+      return res.status(400).json({
+        error: "ID de usuario inválido"
+      });
+    }
+
+    const [posts, totalPosts] = await Promise.all([
+      Post.find({ author: userId })
+        .populate("author", AUTHOR_FIELDS)
+        .populate("comments.user", COMMENT_USER_FIELDS)
+        .sort({ createdAt: -1 })
+        .limit(FEED_LIMIT)
+        .lean(),
+      Post.countDocuments({ author: userId })
+    ]);
+
+    return res.status(200).json({
+      posts: posts.map(post =>
+        normalizePost(post, req.user.id)
+      ),
+      totalPosts
+    });
+  } catch (error) {
+    console.error("GET_USER_POSTS_ERROR:", error);
+
+    return res.status(500).json({
+      error: "Error obteniendo publicaciones del usuario"
+    });
+  }
+});
+
 router.get("/:postId", auth, async (req, res) => {
   try {
     const { postId } = req.params;

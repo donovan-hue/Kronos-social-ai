@@ -23,27 +23,45 @@ module.exports = function auth(req, res, next) {
 
     if (!token) {
       return res.status(401).json({
-        error: "Token inválido"
+        error: "Token inválido",
+        code: "TOKEN_MISSING"
       });
     }
 
     const decoded = jwt.verify(token, secret, {
-  algorithms: ["HS256"]
-});
+      algorithms: ["HS256"]
+    });
+    
     if (
-  typeof decoded.id !== "string" ||
-  !decoded.id.trim()
-) {
-  return res.status(401).json({
-    error: "Token inválido"
-  });
+      typeof decoded.id !== "string" ||
+      !decoded.id.trim()
+    ) {
+      return res.status(401).json({
+        error: "Token inválido",
+        code: "TOKEN_MALFORMED"
+      });
     }
 
     req.user = decoded;
     next();
-  } catch {
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        error: "Token expirado",
+        code: "TOKEN_EXPIRED"
+      });
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        error: "Token inválido",
+        code: "TOKEN_INVALID"
+      });
+    }
+
     return res.status(401).json({
-      error: "Token inválido o expirado"
+      error: "Token inválido o expirado",
+      code: "TOKEN_ERROR"
     });
   }
 };

@@ -158,7 +158,27 @@ router.get("/:id", auth, async (req, res) => {
       });
     }
 
-    return res.json(user);
+    const currentUserId = String(req.user.id);
+    const followers = Array.isArray(user.followers)
+      ? user.followers
+      : [];
+    const following = Array.isArray(user.following)
+      ? user.following
+      : [];
+
+    return res.json({
+      _id: user._id,
+      username: user.username,
+      displayName: user.displayName || "",
+      avatar: user.avatar || "",
+      bio: user.bio || "",
+      createdAt: user.createdAt,
+      followersCount: followers.length,
+      followingCount: following.length,
+      isFollowing: followers.some(
+        followerId => String(followerId) === currentUserId
+      )
+    });
   } catch (error) {
     console.error(
       "GET_USER_ERROR:",

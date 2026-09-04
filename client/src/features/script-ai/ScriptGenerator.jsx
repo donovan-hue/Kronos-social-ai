@@ -20,6 +20,8 @@ export default function ScriptGenerator() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyMessage, setHistoryMessage] = useState("");
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projectsMessage, setProjectsMessage] = useState("");
@@ -213,6 +215,9 @@ export default function ScriptGenerator() {
 
     if (!token) return;
 
+    setHistoryLoading(true);
+    setHistoryMessage("");
+
     try {
       const response = await axios.get(
         `${API}/ai/scripts/history`,
@@ -221,9 +226,19 @@ export default function ScriptGenerator() {
         }
       );
 
-      setHistory(response.data.scripts);
+      setHistory(
+        Array.isArray(response.data?.scripts)
+          ? response.data.scripts
+          : []
+      );
     } catch (error) {
       console.error(error);
+      setHistoryMessage(
+        error.response?.data?.error ||
+        "No se pudo cargar el historial de guiones"
+      );
+    } finally {
+      setHistoryLoading(false);
     }
   }
 
@@ -299,6 +314,21 @@ export default function ScriptGenerator() {
     setDurationMinutes(project.durationMinutes);
     setTone(project.tone || "");
     setAudience(project.audience || "");
+    setEditing(false);
+    setMessage("");
+  }
+
+  function openHistoryItem(item) {
+    setResult(item.result);
+    setCurrentScriptId(item._id);
+    setProjectId("");
+    setStructure(item.structure);
+    setType(item.type);
+    setGenre(item.genre);
+    setFormat(item.format);
+    setDurationMinutes(item.durationMinutes);
+    setTone(item.tone || "");
+    setAudience(item.audience || "");
     setEditing(false);
     setMessage("");
   }
@@ -531,17 +561,23 @@ export default function ScriptGenerator() {
       <section className="ai-history">
         <h3>Historial</h3>
 
-        {history.map(item => (
+        {historyLoading && (
+          <p role="status">Cargando historial...</p>
+        )}
+
+        {!historyLoading && historyMessage && (
+          <p role="alert">{historyMessage}</p>
+        )}
+
+        {!historyLoading && !historyMessage && history.length === 0 && (
+          <p>No tienes guiones generados.</p>
+        )}
+
+        {!historyLoading && !historyMessage && history.map(item => (
           <article
             className="history-item"
             key={item._id}
-            onClick={() => {
-              setResult(item.result);
-              setCurrentScriptId(item._id);
-              setProjectId("");
-              setStructure(item.structure);
-              setEditing(false);
-            }}
+            onClick={() => openHistoryItem(item)}
           >
             <strong>{item.type}</strong>
             <p>{item.prompt}</p>

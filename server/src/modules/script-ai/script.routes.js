@@ -19,6 +19,9 @@ const router = express.Router();
 
 function getProjectPayload(body) {
   const structure = normalizeScriptStructure(body?.structure);
+  const validTypes = Script.schema.path("type").enumValues;
+  const validGenres = Script.schema.path("genre").enumValues;
+  const validFormats = Script.schema.path("format").enumValues;
   const title =
     typeof body?.title === "string" && body.title.trim()
       ? body.title.trim()
@@ -30,8 +33,11 @@ function getProjectPayload(body) {
 
   if (
     typeof body?.type !== "string" ||
+    !validTypes.includes(body.type) ||
     typeof body?.genre !== "string" ||
+    !validGenres.includes(body.genre) ||
     typeof body?.format !== "string" ||
+    !validFormats.includes(body.format) ||
     !Number.isInteger(body?.durationMinutes) ||
     body.durationMinutes < 1 ||
     body.durationMinutes > 180 ||
@@ -171,15 +177,15 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
   } catch (error) {
     console.error("SCRIPT_GENERATION_ERROR:", error);
 
+    const aiError = getAIErrorResponse(error);
+
     if (script) {
       script.status = "failed";
-      script.error = error.message || "SCRIPT_GENERATION_ERROR";
+      script.error = aiError.code;
       await script.save().catch((saveError) => {
         console.error("SCRIPT_GENERATION_SAVE_ERROR:", saveError);
       });
     }
-
-    const aiError = getAIErrorResponse(error);
 
     res.status(aiError.status).json({
       error: aiError.message,
@@ -339,15 +345,22 @@ router.get("/projects/:id", auth, async (req, res) => {
 });
 
 router.get("/history", auth, async (req, res) => {
-  const scripts = await Script.find({
-    user: req.user.id
-  })
-    .sort({ createdAt: -1 })
-    .limit(50);
+  try {
+    const scripts = await Script.find({
+      user: req.user.id
+    })
+      .sort({ createdAt: -1 })
+      .limit(50);
 
-  res.json({
-    scripts
-  });
+    return res.json({
+      scripts
+    });
+  } catch (error) {
+    console.error("SCRIPT_HISTORY_ERROR:", error);
+    return res.status(500).json({
+      error: "No se pudo cargar el historial de guiones"
+    });
+  }
 });
 
 router.put("/:id", auth, async (req, res) => {

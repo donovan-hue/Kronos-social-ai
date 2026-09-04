@@ -64,6 +64,7 @@ export default function Profile() {
 
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [postsCount, setPostsCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(false);
@@ -145,6 +146,11 @@ export default function Profile() {
       return;
     }
 
+    if (typeof user.isFollowing === "boolean") {
+      setFollowing(user.isFollowing);
+      return;
+    }
+
     const followers = Array.isArray(user.followers)
       ? user.followers
       : [];
@@ -168,23 +174,22 @@ export default function Profile() {
 
     try {
       const response = await axios.get(
-        `${API}/posts`,
+        `${API}/posts/user/${userId}`,
         getAuthConfig()
       );
 
-      const allPosts = Array.isArray(
+      const userPosts = Array.isArray(
         response.data?.posts
       )
         ? response.data.posts
         : [];
 
-      const userPosts = allPosts.filter(
-        (post) =>
-          getUserId(post.author) ===
-          String(userId)
-      );
-
       setPosts(userPosts);
+      setPostsCount(
+        Number.isInteger(response.data?.totalPosts)
+          ? response.data.totalPosts
+          : userPosts.length
+      );
     } catch (requestError) {
       console.error(
         "KRONOS_PROFILE_POSTS_ERROR:",
@@ -293,62 +298,22 @@ export default function Profile() {
           return current;
         }
 
-        const currentUser = getCurrentUser();
-
-        const currentUserId = getCurrentUserId(
-          currentUser
-        );
-
-        if (!currentUserId) {
-          return current;
-        }
-
-        const currentFollowers = Array.isArray(
-          current.followers
+        const followersCount = Number.isInteger(
+          current.followersCount
         )
-          ? current.followers
-          : [];
+          ? current.followersCount
+          : Array.isArray(current.followers)
+            ? current.followers.length
+            : 0;
 
-        const normalizedCurrentUserId = String(
-          currentUserId
-        );
-
-        const alreadyFollowing =
-          currentFollowers.some(
-            (followerId) =>
-              getUserId(followerId) ===
-              normalizedCurrentUserId
-          );
-
-        if (
-          newFollowing &&
-          !alreadyFollowing
-        ) {
-          return {
-            ...current,
-            followers: [
-              ...currentFollowers,
-              normalizedCurrentUserId,
-            ],
-          };
-        }
-
-        if (
-          !newFollowing &&
-          alreadyFollowing
-        ) {
-          return {
-            ...current,
-            followers:
-              currentFollowers.filter(
-                (followerId) =>
-                  getUserId(followerId) !==
-                  normalizedCurrentUserId
-              ),
-          };
-        }
-
-        return current;
+        return {
+          ...current,
+          isFollowing: newFollowing,
+          followersCount: Math.max(
+            0,
+            followersCount + (newFollowing ? 1 : -1)
+          )
+        };
       });
     } catch (requestError) {
       console.error(
@@ -447,17 +412,21 @@ export default function Profile() {
     );
   }
 
-  const followersCount = Array.isArray(
-    profile.followers
+  const followersCount = Number.isInteger(
+    profile.followersCount
   )
-    ? profile.followers.length
-    : 0;
+    ? profile.followersCount
+    : Array.isArray(profile.followers)
+      ? profile.followers.length
+      : 0;
 
-  const followingCount = Array.isArray(
-    profile.following
+  const followingCount = Number.isInteger(
+    profile.followingCount
   )
-    ? profile.following.length
-    : 0;
+    ? profile.followingCount
+    : Array.isArray(profile.following)
+      ? profile.following.length
+      : 0;
 
   return (
     <section className="page profile-page">
@@ -506,7 +475,7 @@ export default function Profile() {
           <div className="profile-stats">
             <span>
               <strong>
-                {posts.length}
+                {postsCount}
               </strong>{" "}
               publicaciones
             </span>
