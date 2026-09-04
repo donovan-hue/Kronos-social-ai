@@ -3,8 +3,38 @@ const auth = require("../../middleware/auth");
 const aiLimiter = require("../../middleware/aiLimiter");
 const { handleUpload } = require("../../middleware/upload");
 const imageService = require("./image.service");
+const ImageGeneration = require("./ImageGeneration");
 
 const router = express.Router();
+
+router.get(
+  "/history",
+  auth,
+  async (req, res) => {
+    try {
+      const generations = await ImageGeneration.find({
+        user: req.user.id
+      })
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .lean();
+
+      return res.json({
+        generations
+      });
+    } catch (error) {
+      console.error(
+        "IMAGE_HISTORY_ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "No se pudo cargar el historial de imágenes"
+      });
+    }
+  }
+);
 
 router.post(
   "/generate",

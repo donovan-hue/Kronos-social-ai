@@ -1,9 +1,11 @@
 const express = require("express");
 const { chat } = require("../services/chat.service");
+const auth = require("../../../middleware/auth");
+const aiLimiter = require("../../../middleware/aiLimiter");
 
 const router = express.Router();
 
-router.post("/chat", async (req, res) => {
+router.post("/chat", auth, aiLimiter, async (req, res) => {
   try {
     const { message, history, system } = req.body;
 

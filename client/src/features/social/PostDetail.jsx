@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import Comments from "./Comments";
 
 const API =
   import.meta.env.VITE_API_URL ||
@@ -38,10 +39,7 @@ export default function PostDetail() {
   const { id } = useParams();
 
   const [post, setPost] = useState(null);
-  const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(true);
-  const [sendingComment, setSendingComment] =
-    useState(false);
   const [liking, setLiking] = useState(false);
   const [error, setError] = useState("");
 
@@ -106,47 +104,6 @@ export default function PostDetail() {
       );
     } finally {
       setLiking(false);
-    }
-  }
-
-  async function createComment(event) {
-    event.preventDefault();
-
-    const value = comment.trim();
-
-    if (!value || sendingComment || !post?._id) {
-      return;
-    }
-
-    setSendingComment(true);
-    setError("");
-
-    try {
-      const response = await axios.post(
-        `${API}/posts/${post._id}/comments`,
-        {
-          content: value,
-        },
-        getAuthConfig()
-      );
-
-      if (response.data?.post) {
-        setPost(response.data.post);
-      }
-
-      setComment("");
-    } catch (requestError) {
-      console.error(
-        "KRONOS_POST_DETAIL_COMMENT_ERROR:",
-        requestError
-      );
-
-      setError(
-        requestError.response?.data?.error ||
-          "No se pudo publicar el comentario."
-      );
-    } finally {
-      setSendingComment(false);
     }
   }
 
@@ -231,74 +188,11 @@ export default function PostDetail() {
         </div>
       </article>
 
-      <section className="post-comments">
-        <h3>Comentarios</h3>
-
-        <form
-          className="comment-form"
-          onSubmit={createComment}
-        >
-          <textarea
-            value={comment}
-            onChange={(event) =>
-              setComment(event.target.value)
-            }
-            maxLength={1000}
-            placeholder="Escribe un comentario..."
-            disabled={sendingComment}
-          />
-
-          <button
-            type="submit"
-            disabled={
-              sendingComment ||
-              !comment.trim()
-            }
-          >
-            {sendingComment
-              ? "Publicando..."
-              : "Comentar"}
-          </button>
-        </form>
-
-        {comments.length === 0 ? (
-          <p>
-            Todavía no hay comentarios.
-          </p>
-        ) : (
-          <div className="comments-list">
-            {comments.map((item, index) => (
-              <article
-                className="comment"
-                key={
-                  item._id ||
-                  `${item.user?._id || "user"}-${index}`
-                }
-              >
-                <header>
-                  <strong>
-                    {item.user?.displayName ||
-                      item.user?.username ||
-                      "Usuario"}
-                  </strong>
-
-                  {item.user?.username && (
-                    <span>
-                      @{item.user.username}
-                    </span>
-                  )}
-                </header>
-
-                <p>{item.content}</p>
-
-                <small>
-                  {formatDate(item.createdAt)}
-                </small>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+      <Comments
+        postId={post._id}
+        comments={comments}
+        onCommentCreated={setPost}
+      />
 
       <Link to="/">
         Volver al inicio

@@ -12,6 +12,118 @@ function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
+router.get("/", auth, async (req, res) => {
+  try {
+    const currentUserId = new mongoose.Types.ObjectId(
+      req.user.id
+    );
+
+    const conversations = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { sender: currentUserId },
+            { receiver: currentUserId }
+          ]
+        }
+      },
+      {
+        $sort: {
+          createdAt: -1
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              {
+                $eq: ["$sender", currentUserId]
+              },
+              "$receiver",
+              "$sender"
+            ]
+          },
+          latestMessage: {
+            $first: "$$ROOT"
+          },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    {
+                      $eq: [
+                        "$receiver",
+                        currentUserId
+                      ]
+                    },
+                    {
+                      $eq: ["$read", false]
+                    }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        $sort: {
+          "latestMessage.createdAt": -1
+        }
+      },
+      {
+        $limit: 100
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      {
+        $unwind: "$user"
+      },
+      {
+        $project: {
+          _id: 0,
+          user: {
+            _id: "$user._id",
+            username: "$user.username",
+            displayName: "$user.displayName",
+            avatar: "$user.avatar"
+          },
+          latestMessage: {
+            _id: "$latestMessage._id",
+            text: "$latestMessage.text",
+            sender: "$latestMessage.sender",
+            receiver: "$latestMessage.receiver",
+            createdAt: "$latestMessage.createdAt"
+          },
+          unreadCount: 1
+        }
+      }
+    ]);
+
+    return res.json({
+      conversations
+    });
+  } catch (error) {
+    console.error(
+      "GET_CONVERSATIONS_ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error obteniendo conversaciones"
+    });
+  }
+});
+
 router.get("/:userId", auth, async (req, res) => {
   try {
     const userId = req.params.userId;

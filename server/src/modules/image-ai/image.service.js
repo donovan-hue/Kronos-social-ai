@@ -71,14 +71,12 @@ try {
     );
   }
 
-  if (!image.b64_json) {
-    await ImageGeneration.create({
-      user: userId,
-      prompt: prompt.trim(),
-      model,
-      imageUrl: url
-    });
-  }
+  await ImageGeneration.create({
+    user: userId,
+    prompt: prompt.trim(),
+    model,
+    imageUrl: url
+  });
 
   return {
     url,

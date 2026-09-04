@@ -39,9 +39,7 @@ export default function ImageGenerator() {
         }
       );
 
-      setImageUrl(
-        response.data.generation.imageUrl || ""
-      );
+      setImageUrl(response.data?.url || "");
 
       if (response.data.message) {
         setMessage(response.data.message);

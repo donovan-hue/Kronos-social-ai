@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 
 const Post = require("./Post");
 const auth = require("../../middleware/auth");
+const { createNotification } = require("../notifications/notification.service");
 
 const router = express.Router();
 
@@ -243,6 +244,14 @@ router.post(
 
       const postObject = post.toObject();
 
+      await createNotification({
+        recipient: post.author._id,
+        actor: req.user.id,
+        type: "comment",
+        post: post._id,
+        io: req.app.get("io")
+      });
+
       return res.status(201).json({
         post: {
           ...postObject,
@@ -359,7 +368,7 @@ router.post(
             new: true
           }
         )
-          .select("_id likes")
+          .select("_id likes author")
           .lean();
 
       if (!updatedPost) {
@@ -376,6 +385,16 @@ router.post(
         (likeUserId) =>
           String(likeUserId) === String(userId)
       );
+
+      if (liked) {
+        await createNotification({
+          recipient: updatedPost.author,
+          actor: req.user.id,
+          type: "like",
+          post: updatedPost._id,
+          io: req.app.get("io")
+        });
+      }
 
       return res.status(200).json({
         postId: String(updatedPost._id),

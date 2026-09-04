@@ -15,6 +15,10 @@ import SocialPage from "./features/social/SocialPage";
 import PostDetail from "./features/social/PostDetail";
 import UserSearch from "./features/users/UserSearch";
 import Profile from "./features/users/Profile";
+import Messages from "./features/messages/Messages";
+import Notifications from "./features/notifications/Notifications";
+import CreatePost from "./features/social/CreatePost";
+import Settings from "./features/settings/Settings";
 
 function AppContent() {
   const [user, setUser] = useState(() => {
@@ -86,6 +90,18 @@ function AppContent() {
           Perfil
         </Link>
 
+        <Link to="/messages">
+          Mensajes
+        </Link>
+
+        <Link to="/notifications">
+          Notificaciones
+        </Link>
+
+        <Link to="/settings">
+          Configuración
+        </Link>
+
         <Link to="/ai">
           IA
         </Link>
@@ -104,6 +120,10 @@ function AppContent() {
 
         <Link to="/social">
           Social
+        </Link>
+
+        <Link to="/create-post">
+          Crear publicación
         </Link>
 
         <button
@@ -146,6 +166,15 @@ function AppContent() {
         />
 
         <Route
+          path="/create-post"
+          element={
+            <section className="page">
+              <CreatePost />
+            </section>
+          }
+        />
+
+        <Route
           path="/post/:id"
           element={<PostDetail />}
         />
@@ -163,6 +192,26 @@ function AppContent() {
         <Route
           path="/users/:id"
           element={<Profile />}
+        />
+
+        <Route
+          path="/messages"
+          element={<Messages />}
+        />
+
+        <Route
+          path="/messages/:userId"
+          element={<Messages />}
+        />
+
+        <Route
+          path="/notifications"
+          element={<Notifications />}
+        />
+
+        <Route
+          path="/settings"
+          element={<Settings onLogout={logout} />}
         />
       </Routes>
     </BrowserRouter>

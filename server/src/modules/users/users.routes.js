@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const User = require("./User");
 const auth = require("../../middleware/auth");
 const { requireUser } = require("../../middleware/permissions");
+const { createNotification } = require("../notifications/notification.service");
 
 const router = express.Router();
 
@@ -297,6 +298,13 @@ router.post(
             }
           )
         ]);
+
+        await createNotification({
+          recipient: targetUserId,
+          actor: currentUserId,
+          type: "follow",
+          io: req.app.get("io")
+        });
       }
 
       return res.json({

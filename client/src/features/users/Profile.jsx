@@ -28,6 +28,10 @@ function getCurrentUser() {
   }
 }
 
+function getCurrentUserId(user) {
+  return user?._id || user?.id || "";
+}
+
 function formatDate(date) {
   if (!date) {
     return "";
@@ -134,7 +138,9 @@ export default function Profile() {
 
     const currentUser = getCurrentUser();
 
-    if (!currentUser?._id) {
+    const currentUserId = getCurrentUserId(currentUser);
+
+    if (!currentUserId) {
       setFollowing(false);
       return;
     }
@@ -147,7 +153,7 @@ export default function Profile() {
       followers.some(
         (followerId) =>
           getUserId(followerId) ===
-          String(currentUser._id)
+          String(currentUserId)
       )
     );
   }
@@ -289,7 +295,11 @@ export default function Profile() {
 
         const currentUser = getCurrentUser();
 
-        if (!currentUser?._id) {
+        const currentUserId = getCurrentUserId(
+          currentUser
+        );
+
+        if (!currentUserId) {
           return current;
         }
 
@@ -299,15 +309,15 @@ export default function Profile() {
           ? current.followers
           : [];
 
-        const currentUserId = String(
-          currentUser._id
+        const normalizedCurrentUserId = String(
+          currentUserId
         );
 
         const alreadyFollowing =
           currentFollowers.some(
             (followerId) =>
               getUserId(followerId) ===
-              currentUserId
+              normalizedCurrentUserId
           );
 
         if (
@@ -318,7 +328,7 @@ export default function Profile() {
             ...current,
             followers: [
               ...currentFollowers,
-              currentUser._id,
+              normalizedCurrentUserId,
             ],
           };
         }
@@ -333,7 +343,7 @@ export default function Profile() {
               currentFollowers.filter(
                 (followerId) =>
                   getUserId(followerId) !==
-                  currentUserId
+                  normalizedCurrentUserId
               ),
           };
         }
@@ -517,14 +527,20 @@ export default function Profile() {
           </div>
 
           {!isOwnProfile && (
-            <button
-              type="button"
-              onClick={toggleFollow}
-            >
-              {following
-                ? "Dejar de seguir"
-                : "Seguir"}
-            </button>
+            <div className="profile-actions">
+              <button
+                type="button"
+                onClick={toggleFollow}
+              >
+                {following
+                  ? "Dejar de seguir"
+                  : "Seguir"}
+              </button>
+
+              <Link to={`/messages/${profile._id}`}>
+                Mensaje
+              </Link>
+            </div>
           )}
         </div>
       </header>

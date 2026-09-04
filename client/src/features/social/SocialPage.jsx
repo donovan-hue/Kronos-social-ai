@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import CreatePost from "./CreatePost";
 
 const API =
   import.meta.env.VITE_API_URL ||
@@ -36,9 +37,7 @@ function formatDate(date) {
 
 export default function SocialPage() {
   const [posts, setPosts] = useState([]);
-  const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
   const [likingPostId, setLikingPostId] = useState(null);
   const [error, setError] = useState("");
 
@@ -73,50 +72,6 @@ export default function SocialPage() {
       );
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function createPost(event) {
-    event.preventDefault();
-
-    const value = content.trim();
-
-    if (!value || creating) {
-      return;
-    }
-
-    setCreating(true);
-    setError("");
-
-    try {
-      const response = await axios.post(
-        `${API}/posts`,
-        {
-          content: value,
-        },
-        getAuthConfig()
-      );
-
-      if (response.data?.post) {
-        setPosts((currentPosts) => [
-          response.data.post,
-          ...currentPosts,
-        ]);
-      }
-
-      setContent("");
-    } catch (requestError) {
-      console.error(
-        "KRONOS_SOCIAL_CREATE_POST_ERROR:",
-        requestError
-      );
-
-      setError(
-        requestError.response?.data?.error ||
-          "No se pudo crear la publicación."
-      );
-    } finally {
-      setCreating(false);
     }
   }
 
@@ -192,32 +147,14 @@ export default function SocialPage() {
         </p>
       )}
 
-      <form
-        className="create-post-form"
-        onSubmit={createPost}
-      >
-        <textarea
-          value={content}
-          onChange={(event) =>
-            setContent(event.target.value)
-          }
-          maxLength={5000}
-          placeholder="¿Qué estás pensando?"
-          disabled={creating}
-        />
-
-        <button
-          type="submit"
-          disabled={
-            creating ||
-            !content.trim()
-          }
-        >
-          {creating
-            ? "Publicando..."
-            : "Publicar"}
-        </button>
-      </form>
+      <CreatePost
+        onCreated={(post) =>
+          setPosts((currentPosts) => [
+            post,
+            ...currentPosts,
+          ])
+        }
+      />
 
       <div className="posts-list">
         {posts.length === 0 ? (
