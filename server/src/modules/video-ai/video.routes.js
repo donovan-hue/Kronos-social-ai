@@ -2,6 +2,7 @@ const aiLimiter = require("../../middleware/aiLimiter");
 const express = require("express");
 const VideoGeneration = require("./VideoGeneration");
 const auth = require("../../middleware/auth");
+const { requireUser } = require("../../middleware/permissions");
 const { generateVideo } = require("./video.service");
 const {
   getAIErrorResponse
@@ -12,7 +13,7 @@ const {
 
 const router = express.Router();
 
-router.post("/generate", auth, aiLimiter, async (req, res) => {
+router.post("/generate", auth, requireUser, aiLimiter, async (req, res) => {
   let generation;
 
   try {
@@ -79,7 +80,7 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
   }
 });
 
-router.get("/history", auth, async (req, res) => {
+router.get("/history", auth, requireUser, async (req, res) => {
   const generations =
     await VideoGeneration.find({
       user: req.user.id
@@ -92,7 +93,7 @@ router.get("/history", auth, async (req, res) => {
   });
 });
 
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", auth, requireUser, async (req, res) => {
   const generation =
     await VideoGeneration.findOne({
       _id: req.params.id,
@@ -110,7 +111,7 @@ router.get("/:id", auth, async (req, res) => {
   });
 });
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, requireUser, async (req, res) => {
   const generation =
     await VideoGeneration.findOneAndDelete({
       _id: req.params.id,

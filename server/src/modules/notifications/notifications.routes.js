@@ -2,11 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Notification = require("./Notification");
 const auth = require("../../middleware/auth");
+const { requireUser } = require("../../middleware/permissions");
 
 const router = express.Router();
 const NOTIFICATION_LIMIT = 100;
 
-router.get("/", auth, async (req, res) => {
+router.get("/", auth, requireUser, async (req, res) => {
   try {
     const notifications = await Notification.find({
       recipient: req.user.id
@@ -38,7 +39,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-router.patch("/read-all", auth, async (req, res) => {
+router.patch("/read-all", auth, requireUser, async (req, res) => {
   try {
     await Notification.updateMany(
       {
@@ -67,7 +68,7 @@ router.patch("/read-all", auth, async (req, res) => {
   }
 });
 
-router.patch("/:notificationId/read", auth, async (req, res) => {
+router.patch("/:notificationId/read", auth, requireUser, async (req, res) => {
   try {
     const { notificationId } = req.params;
 

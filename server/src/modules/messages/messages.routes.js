@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Message = require("./Message");
 const User = require("../users/User");
 const auth = require("../../middleware/auth");
+const { requireUser } = require("../../middleware/permissions");
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
-router.get("/", auth, async (req, res) => {
+router.get("/", auth, requireUser, async (req, res) => {
   try {
     const currentUserId = new mongoose.Types.ObjectId(
       req.user.id
@@ -124,7 +125,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-router.get("/:userId", auth, async (req, res) => {
+router.get("/:userId", auth, requireUser, async (req, res) => {
   try {
     const userId = req.params.userId;
 
@@ -189,7 +190,7 @@ router.get("/:userId", auth, async (req, res) => {
   }
 });
 
-router.post("/:userId", auth, async (req, res) => {
+router.post("/:userId", auth, requireUser, async (req, res) => {
   try {
     const userId = req.params.userId;
 
@@ -276,6 +277,7 @@ router.post("/:userId", auth, async (req, res) => {
 router.patch(
   "/:userId/read",
   auth,
+  requireUser,
   async (req, res) => {
     try {
       const userId = req.params.userId;

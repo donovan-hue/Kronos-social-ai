@@ -1,5 +1,6 @@
 const express = require("express");
 const auth = require("../../middleware/auth");
+const { requireUser } = require("../../middleware/permissions");
 const aiLimiter = require("../../middleware/aiLimiter");
 const { handleUpload } = require("../../middleware/upload");
 const imageService = require("./image.service");
@@ -13,6 +14,7 @@ const router = express.Router();
 router.get(
   "/history",
   auth,
+  requireUser,
   async (req, res) => {
     try {
       const generations = await ImageGeneration.find({
@@ -42,6 +44,7 @@ router.get(
 router.post(
   "/generate",
   auth,
+  requireUser,
   aiLimiter,
   async (req, res) => {
     try {
@@ -90,6 +93,7 @@ router.post(
 router.post(
     "/upload",
   auth,
+  requireUser,
   aiLimiter,
   handleUpload("image"),
   async (req, res) => {
@@ -127,6 +131,7 @@ router.post(
 router.delete(
   "/:id",
   auth,
+  requireUser,
   async (req, res) => {
     try {
       const generation =

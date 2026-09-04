@@ -1,6 +1,7 @@
 const express = require("express");
 const { chat } = require("../services/chat.service");
 const auth = require("../../../middleware/auth");
+const { requireUser } = require("../../../middleware/permissions");
 const aiLimiter = require("../../../middleware/aiLimiter");
 const {
   getAIErrorResponse
@@ -8,7 +9,7 @@ const {
 
 const router = express.Router();
 
-router.post("/chat", auth, aiLimiter, async (req, res) => {
+router.post("/chat", auth, requireUser, aiLimiter, async (req, res) => {
   try {
     const { message, history, system } = req.body;
 

@@ -3,11 +3,12 @@ const mongoose = require("mongoose");
 
 const Post = require("./Post");
 const auth = require("../../middleware/auth");
+const { requireUser } = require("../../middleware/permissions");
 const { createNotification } = require("../notifications/notification.service");
 
 const router = express.Router();
 
-router.get("/user/:userId", auth, async (req, res) => {
+router.get("/user/:userId", auth, requireUser, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -42,7 +43,7 @@ router.get("/user/:userId", auth, async (req, res) => {
   }
 });
 
-router.get("/:postId", auth, async (req, res) => {
+router.get("/:postId", auth, requireUser, async (req, res) => {
   try {
     const { postId } = req.params;
 
@@ -122,7 +123,7 @@ function normalizePost(post, currentUserId) {
  * El frontend debe utilizar estos dos campos para representar
  * el estado del like del usuario actual.
  */
-router.get("/", auth, async (req, res) => {
+router.get("/", auth, requireUser, async (req, res) => {
   try {
     const posts = await Post.find()
       .populate("author", AUTHOR_FIELDS)
@@ -152,7 +153,7 @@ router.get("/", auth, async (req, res) => {
  *
  * Crea una publicación.
  */
-router.post("/", auth, async (req, res) => {
+router.post("/", auth, requireUser, async (req, res) => {
   try {
     const content =
       typeof req.body?.content === "string"
@@ -216,6 +217,7 @@ router.post("/", auth, async (req, res) => {
 router.post(
   "/:postId/comments",
   auth,
+  requireUser,
   async (req, res) => {
     try {
       const { postId } = req.params;
@@ -336,6 +338,7 @@ router.post(
 router.post(
   "/:postId/like",
   auth,
+  requireUser,
   async (req, res) => {
     try {
       const { postId } = req.params;

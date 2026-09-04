@@ -2,6 +2,7 @@ const express = require("express");
 const Script = require("./Script");
 const ScriptProject = require("./ScriptProject");
 const auth = require("../../middleware/auth");
+const { requireUser } = require("../../middleware/permissions");
 const aiLimiter = require("../../middleware/aiLimiter");
 const {
   generateScript,
@@ -62,7 +63,7 @@ function getProjectPayload(body) {
   };
 }
 
-router.post("/generate", auth, aiLimiter, async (req, res) => {
+router.post("/generate", auth, requireUser, aiLimiter, async (req, res) => {
   let script;
 
   try {
@@ -194,7 +195,7 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
   }
 });
 
-router.post("/projects", auth, async (req, res) => {
+router.post("/projects", auth, requireUser, async (req, res) => {
   try {
     const payload = getProjectPayload(req.body);
     let sourceScript = null;
@@ -239,7 +240,7 @@ router.post("/projects", auth, async (req, res) => {
   }
 });
 
-router.get("/projects", auth, async (req, res) => {
+router.get("/projects", auth, requireUser, async (req, res) => {
   try {
     const projects = await ScriptProject.find({
       user: req.user.id
@@ -259,7 +260,7 @@ router.get("/projects", auth, async (req, res) => {
   }
 });
 
-router.get("/projects/:id/export", auth, async (req, res) => {
+router.get("/projects/:id/export", auth, requireUser, async (req, res) => {
   try {
     const format = req.query.format || "txt";
 
@@ -320,7 +321,7 @@ router.get("/projects/:id/export", auth, async (req, res) => {
   }
 });
 
-router.get("/projects/:id", auth, async (req, res) => {
+router.get("/projects/:id", auth, requireUser, async (req, res) => {
   try {
     const project = await ScriptProject.findOne({
       _id: req.params.id,
@@ -344,7 +345,7 @@ router.get("/projects/:id", auth, async (req, res) => {
   }
 });
 
-router.get("/history", auth, async (req, res) => {
+router.get("/history", auth, requireUser, async (req, res) => {
   try {
     const scripts = await Script.find({
       user: req.user.id
@@ -363,7 +364,7 @@ router.get("/history", auth, async (req, res) => {
   }
 });
 
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", auth, requireUser, async (req, res) => {
   try {
     const script = await Script.findOne({
       _id: req.params.id,
@@ -404,7 +405,7 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-router.put("/projects/:id", auth, async (req, res) => {
+router.put("/projects/:id", auth, requireUser, async (req, res) => {
   try {
     const project = await ScriptProject.findOne({
       _id: req.params.id,
@@ -442,7 +443,7 @@ router.put("/projects/:id", auth, async (req, res) => {
   }
 });
 
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", auth, requireUser, async (req, res) => {
   const script = await Script.findOne({
     _id: req.params.id,
     user: req.user.id
@@ -459,7 +460,7 @@ router.get("/:id", auth, async (req, res) => {
   });
 });
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, requireUser, async (req, res) => {
   const script = await Script.findOneAndDelete({
     _id: req.params.id,
     user: req.user.id
