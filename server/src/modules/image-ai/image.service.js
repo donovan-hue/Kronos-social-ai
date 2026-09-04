@@ -1,5 +1,8 @@
 const OpenAI = require("openai");
 const ImageGeneration = require("./ImageGeneration");
+const {
+  getAIProviderConfig
+} = require("../../config/aiProviders");
 
 async function generateImage({ prompt, userId }) {
   if (
@@ -13,22 +16,29 @@ async function generateImage({ prompt, userId }) {
     throw new Error("INVALID_USER_ID");
   }
 
-  if (!process.env.OPENROUTER_API_KEY) {
+  const provider =
+    getAIProviderConfig("image");
+
+  if (!provider.configured) {
+    await ImageGeneration.create({
+      user: userId,
+      prompt: prompt.trim(),
+      model: provider.model,
+      provider: provider.provider
+    });
+
     return {
       url: "",
       development: true,
-      model: null,
+      model: provider.model,
+      provider: provider.provider,
       message:
         "Configura OPENROUTER_API_KEY para activar la generación de imágenes."
     };
   }
 
-  const model =
-    process.env.OPENROUTER_IMAGE_MODEL ||
-    "google/gemini-2.5-flash-image";
-
   const client = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: provider.apiKey,
     baseURL: "https://openrouter.ai/api/v1",
     defaultHeaders: {
       "HTTP-Referer":
@@ -41,7 +51,7 @@ async function generateImage({ prompt, userId }) {
 
 try {
   response = await client.images.generate({
-    model,
+    model: provider.model,
     prompt: prompt.trim(),
     size: "1024x1024"
   });
@@ -74,14 +84,16 @@ try {
   await ImageGeneration.create({
     user: userId,
     prompt: prompt.trim(),
-    model,
+    model: provider.model,
+    provider: provider.provider,
     imageUrl: url
   });
 
   return {
     url,
     development: false,
-    model
+    model: provider.model,
+    provider: provider.provider
   };
 }
 
@@ -102,6 +114,7 @@ async function uploadImage({ file, userId }) {
     user: userId,
     prompt: "Imagen subida por el usuario",
     model: "upload",
+    provider: "upload",
     imageUrl
   });
 

@@ -103,7 +103,7 @@ export default function ImageGenerator() {
       </div>
 
       {message && (
-        <p>{message}</p>
+        <p role="status" aria-live="polite">{message}</p>
       )}
 
       {imageUrl && (

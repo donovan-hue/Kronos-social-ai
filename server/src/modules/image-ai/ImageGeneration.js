@@ -17,6 +17,10 @@ const imageGenerationSchema = new mongoose.Schema(
       type: String,
       default: "gpt-image-1"
     },
+    provider: {
+      type: String,
+      default: "openrouter"
+    },
     imageUrl: {
       type: String,
       default: ""

@@ -4,6 +4,9 @@ const aiLimiter = require("../../middleware/aiLimiter");
 const { handleUpload } = require("../../middleware/upload");
 const imageService = require("./image.service");
 const ImageGeneration = require("./ImageGeneration");
+const {
+  getAIErrorResponse
+} = require("../../middleware/aiError");
 
 const router = express.Router();
 
@@ -73,9 +76,12 @@ router.post(
         error
       );
 
-      return res.status(500).json({
-        error:
-          "No se pudo generar la imagen"
+      const aiError =
+        getAIErrorResponse(error);
+
+      return res.status(aiError.status).json({
+        error: aiError.message,
+        code: aiError.code
       });
     }
   }
@@ -107,9 +113,46 @@ router.post(
         error
       );
 
+      const aiError =
+        getAIErrorResponse(error);
+
+      return res.status(aiError.status).json({
+        error: aiError.message,
+        code: aiError.code
+      });
+    }
+  }
+);
+
+router.delete(
+  "/:id",
+  auth,
+  async (req, res) => {
+    try {
+      const generation =
+        await ImageGeneration.findOneAndDelete({
+          _id: req.params.id,
+          user: req.user.id
+        });
+
+      if (!generation) {
+        return res.status(404).json({
+          error: "Imagen no encontrada"
+        });
+      }
+
+      return res.json({
+        deleted: true
+      });
+    } catch (error) {
+      console.error(
+        "IMAGE_DELETE_ERROR:",
+        error
+      );
+
       return res.status(500).json({
         error:
-          "No se pudo subir la imagen"
+          "No se pudo eliminar la imagen"
       });
     }
   }

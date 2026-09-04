@@ -26,6 +26,14 @@ const scriptSchema = new mongoose.Schema(
       ],
       default: "custom"
     },
+    provider: {
+      type: String,
+      default: "openrouter"
+    },
+    model: {
+      type: String,
+      default: "openrouter/free"
+    },
     result: {
       type: String,
       default: ""

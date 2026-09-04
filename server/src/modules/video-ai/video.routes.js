@@ -3,6 +3,12 @@ const express = require("express");
 const VideoGeneration = require("./VideoGeneration");
 const auth = require("../../middleware/auth");
 const { generateVideo } = require("./video.service");
+const {
+  getAIErrorResponse
+} = require("../../middleware/aiError");
+const {
+  getAIProviderConfig
+} = require("../../config/aiProviders");
 
 const router = express.Router();
 
@@ -25,6 +31,10 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
       await VideoGeneration.create({
         user: req.user.id,
         prompt: prompt.trim(),
+        provider:
+          getAIProviderConfig("video").provider,
+        model:
+          getAIProviderConfig("video").model,
         status: result.status,
         videoUrl: result.videoUrl || ""
       });
@@ -37,8 +47,11 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
   } catch (error) {
     console.error("VIDEO_GENERATION_ERROR:", error);
 
-    res.status(500).json({
-      error: "Error generando video"
+    const aiError = getAIErrorResponse(error);
+
+    res.status(aiError.status).json({
+      error: aiError.message,
+      code: aiError.code
     });
   }
 });

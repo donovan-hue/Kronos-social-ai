@@ -1,7 +1,6 @@
-const VIDEO_API_URL = process.env.VIDEO_API_URL;
-const VIDEO_API_KEY = process.env.VIDEO_API_KEY;
-const VIDEO_MODEL =
-  process.env.VIDEO_MODEL || "video-generation";
+const {
+  getAIProviderConfig
+} = require("../../config/aiProviders");
 
 async function generateVideo(prompt) {
   if (
@@ -11,7 +10,10 @@ async function generateVideo(prompt) {
     throw new Error("INVALID_VIDEO_PROMPT");
   }
 
-  if (!VIDEO_API_URL || !VIDEO_API_KEY) {
+  const provider =
+    getAIProviderConfig("video");
+
+  if (!provider.configured) {
     return {
       status: "queued",
       videoUrl: "",
@@ -23,7 +25,7 @@ async function generateVideo(prompt) {
 
   let response;
 try {
-  response = await fetch(VIDEO_API_URL, {
+  response = await fetch(provider.endpoint, {
     
   signal: AbortSignal.timeout(30000),
     method: "POST",
@@ -32,7 +34,7 @@ try {
       Authorization: `Bearer ${VIDEO_API_KEY}`
     },
     body: JSON.stringify({
-      model: VIDEO_MODEL,
+      model: provider.model,
       prompt: prompt.trim()
     })
   });
@@ -73,7 +75,7 @@ try {
     status: "completed",
     videoUrl,
     development: false,
-    model: VIDEO_MODEL
+    model: provider.model
   };
   } catch (error) {
   console.error(

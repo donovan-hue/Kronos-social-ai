@@ -3,6 +3,12 @@ const Script = require("./Script");
 const auth = require("../../middleware/auth");
 const aiLimiter = require("../../middleware/aiLimiter");
 const { generateScript } = require("./script.service");
+const {
+  getAIErrorResponse
+} = require("../../middleware/aiError");
+const {
+  getAIProviderConfig
+} = require("../../config/aiProviders");
 
 const router = express.Router();
 
@@ -25,6 +31,10 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
       user: req.user.id,
       prompt: prompt.trim(),
       type,
+      provider:
+        getAIProviderConfig("script").provider,
+      model:
+        getAIProviderConfig("script").model,
       result
     });
 
@@ -34,8 +44,11 @@ router.post("/generate", auth, aiLimiter, async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
-      error: "Error generando script"
+    const aiError = getAIErrorResponse(error);
+
+    res.status(aiError.status).json({
+      error: aiError.message,
+      code: aiError.code
     });
   }
 });

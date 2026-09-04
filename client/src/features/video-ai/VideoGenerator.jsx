@@ -121,7 +121,11 @@ export default function VideoGenerator() {
         </p>
       )}
 
-      {message && <p>{message}</p>}
+      {message && (
+        <p role="status" aria-live="polite">
+          {message}
+        </p>
+      )}
 
       {videoUrl && (
         <div className="video-result">

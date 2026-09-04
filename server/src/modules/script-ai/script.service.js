@@ -1,10 +1,16 @@
 const OpenAI = require("openai");
+const {
+  getAIProviderConfig
+} = require("../../config/aiProviders");
 
 const MAX_PROMPT_LENGTH = 10000;
 const MAX_OUTPUT_TOKENS = 3000;
 
 async function generateScript({ prompt, type = "custom" }) {
-  if (!process.env.OPENROUTER_API_KEY) {
+  const provider =
+    getAIProviderConfig("script");
+
+  if (!provider.configured) {
     throw new Error("OPENROUTER_API_KEY_NOT_CONFIGURED");
   }
 
@@ -22,7 +28,7 @@ async function generateScript({ prompt, type = "custom" }) {
   }
 
   const client = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: provider.apiKey,
     baseURL: "https://openrouter.ai/api/v1",
     defaultHeaders: {
       "HTTP-Referer":
@@ -35,9 +41,7 @@ async function generateScript({ prompt, type = "custom" }) {
   try {
     const response =
       await client.chat.completions.create({
-        model:
-          process.env.OPENROUTER_MODEL ||
-          "openrouter/free",
+        model: provider.model,
         max_tokens: MAX_OUTPUT_TOKENS,
         messages: [
           {

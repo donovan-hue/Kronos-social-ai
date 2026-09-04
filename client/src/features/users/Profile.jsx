@@ -531,6 +531,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={toggleFollow}
+                aria-pressed={following}
               >
                 {following
                   ? "Dejar de seguir"
@@ -609,6 +610,7 @@ export default function Profile() {
             <button
               type="submit"
               disabled={saving}
+              aria-busy={saving}
             >
               {saving
                 ? "Guardando..."

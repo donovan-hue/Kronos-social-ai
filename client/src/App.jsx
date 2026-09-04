@@ -10,7 +10,9 @@ import Auth from "./features/auth/Auth";
 import ImageGenerator from "./features/image-ai/ImageGenerator";
 import ScriptGenerator from "./features/script-ai/ScriptGenerator";
 import VideoGenerator from "./features/video-ai/VideoGenerator";
+import VideoJobs from "./features/video-ai/VideoJobs";
 import AICenter from "./features/ai/AICenter";
+import MediaLibrary from "./features/ai/MediaLibrary";
 import SocialPage from "./features/social/SocialPage";
 import PostDetail from "./features/social/PostDetail";
 import UserSearch from "./features/users/UserSearch";
@@ -118,6 +120,14 @@ function AppContent() {
           Video
         </Link>
 
+        <Link to="/ai/video/jobs">
+          Trabajos
+        </Link>
+
+        <Link to="/library">
+          Biblioteca
+        </Link>
+
         <Link to="/social">
           Social
         </Link>
@@ -158,6 +168,16 @@ function AppContent() {
         <Route
           path="/ai/video"
           element={<VideoGenerator />}
+        />
+
+        <Route
+          path="/ai/video/jobs"
+          element={<VideoJobs />}
+        />
+
+        <Route
+          path="/library"
+          element={<MediaLibrary />}
         />
 
         <Route

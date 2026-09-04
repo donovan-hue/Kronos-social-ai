@@ -1,15 +1,21 @@
 const { GoogleGenAI } = require("@google/genai");
+const {
+  getAIProviderConfig
+} = require("../../../config/aiProviders");
 
 let gemini = null;
 
 function getGemini() {
   if (!gemini) {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY no configurada");
+    const provider =
+      getAIProviderConfig("chat");
+
+    if (!provider.configured) {
+      throw new Error("GEMINI_API_KEY_NOT_CONFIGURED");
     }
 
     gemini = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY
+      apiKey: provider.apiKey
     });
   }
 
@@ -18,9 +24,12 @@ function getGemini() {
 
 async function generateResponse({
   messages,
-  model = "gemini-3.6-flash"
+  model
 }) {
   const client = getGemini();
+  const provider =
+    getAIProviderConfig("chat");
+  const selectedModel = model || provider.model;
 
   const systemMessage = messages.find(
     (message) => message.role === "system"
@@ -43,13 +52,13 @@ async function generateResponse({
     .join("\n\n");
 
   const response = await client.models.generateContent({
-    model,
+    model: selectedModel,
     contents: prompt
   });
 
   return {
     text: response.text || "",
-    model,
+    model: selectedModel,
     usage: null
   };
 }

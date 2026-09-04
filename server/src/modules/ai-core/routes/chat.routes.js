@@ -2,6 +2,9 @@ const express = require("express");
 const { chat } = require("../services/chat.service");
 const auth = require("../../../middleware/auth");
 const aiLimiter = require("../../../middleware/aiLimiter");
+const {
+  getAIErrorResponse
+} = require("../../../middleware/aiError");
 
 const router = express.Router();
 
@@ -22,9 +25,12 @@ router.post("/chat", auth, aiLimiter, async (req, res) => {
   } catch (error) {
     console.error("Kronos AI chat error:", error);
 
-    res.status(500).json({
+    const aiError = getAIErrorResponse(error);
+
+    res.status(aiError.status).json({
       success: false,
-      error: error.message
+      error: aiError.message,
+      code: aiError.code
     });
   }
 });
