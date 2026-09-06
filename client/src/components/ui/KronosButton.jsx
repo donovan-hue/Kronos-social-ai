@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useCallback, useState } from "react";
 
 export default function KronosButton({
   children,
@@ -8,9 +9,12 @@ export default function KronosButton({
   icon = null,
   className = "",
   disabled = false,
+  loading = false,
   onClick,
   ariaLabel,
 }) {
+  const [isBouncing, setIsBouncing] = useState(false);
+
   const themeClass =
     variant === "copper"
       ? "kronos-theme-copper"
@@ -23,36 +27,72 @@ export default function KronosButton({
       ? "kronos-bubble-sm"
       : size === "lg"
         ? "kronos-bubble-lg"
-        : "";
+        : "kronos-bubble-md";
 
   const classes = [
     "kronos-bubble",
     themeClass,
     sizeClass,
+    isBouncing ? "kronos-bubble-bounce" : "",
+    loading ? "kronos-bubble-loading" : "",
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
+  const handleClick = useCallback(
+    (event) => {
+      if (disabled || loading) {
+        return;
+      }
+
+      setIsBouncing(false);
+
+      requestAnimationFrame(() => {
+        setIsBouncing(true);
+      });
+
+      if (typeof onClick === "function") {
+        onClick(event);
+      }
+    },
+    [disabled, loading, onClick],
+  );
+
+  const handleAnimationEnd = useCallback(() => {
+    setIsBouncing(false);
+  }, []);
+
   return (
     <button
       type={type}
       className={classes}
-      disabled={disabled}
-      onClick={onClick}
+      disabled={disabled || loading}
+      onClick={handleClick}
+      onAnimationEnd={handleAnimationEnd}
       aria-label={ariaLabel}
+      aria-busy={loading}
     >
-      {icon && (
+      <span className="kronos-bubble-highlight" aria-hidden="true" />
+
+      {loading ? (
         <span
-          className="kronos-button-icon"
+          className="kronos-button-spinner"
           aria-hidden="true"
-        >
-          {icon}
-        </span>
+        />
+      ) : (
+        icon && (
+          <span
+            className="kronos-button-icon"
+            aria-hidden="true"
+          >
+            {icon}
+          </span>
+        )
       )}
 
       <span className="kronos-button-label">
-        {children}
+        {loading ? "Procesando..." : children}
       </span>
     </button>
   );
@@ -60,24 +100,13 @@ export default function KronosButton({
 
 KronosButton.propTypes = {
   children: PropTypes.node,
-  type: PropTypes.oneOf([
-    "button",
-    "submit",
-    "reset",
-  ]),
-  variant: PropTypes.oneOf([
-    "silver",
-    "copper",
-    "pink",
-  ]),
-  size: PropTypes.oneOf([
-    "sm",
-    "md",
-    "lg",
-  ]),
+  type: PropTypes.oneOf(["button", "submit", "reset"]),
+  variant: PropTypes.oneOf(["silver", "copper", "pink"]),
+  size: PropTypes.oneOf(["sm", "md", "lg"]),
   icon: PropTypes.node,
   className: PropTypes.string,
   disabled: PropTypes.bool,
+  loading: PropTypes.bool,
   onClick: PropTypes.func,
   ariaLabel: PropTypes.string,
 };
