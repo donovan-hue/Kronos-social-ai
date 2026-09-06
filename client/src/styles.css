@@ -2331,3 +2331,352 @@ h4 {
     transform: none;
   }
 }
+/* =========================================================
+   KRONOS BUBBLE BUTTON SYSTEM — STEP 4
+   3D / CHROME / BOUNCE INTERACTION
+   ========================================================= */
+
+.kronos-bubble {
+  --bubble-main: var(--kronos-silver);
+  --bubble-light: var(--kronos-silver-light);
+  --bubble-dark: var(--kronos-silver-dark);
+  --bubble-glow: rgba(215, 217, 219, 0.22);
+
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 46px;
+  min-width: 120px;
+
+  padding: 11px 20px;
+
+  overflow: hidden;
+
+  border: 1px solid var(--bubble-main);
+  border-radius: 999px;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 30% 18%,
+      rgba(255, 255, 255, 0.32),
+      transparent 28%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.24),
+      rgba(255, 255, 255, 0.07) 42%,
+      rgba(0, 0, 0, 0.35)
+    );
+
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.28),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.35),
+    0 5px 0 var(--bubble-dark),
+    0 10px 24px rgba(0, 0, 0, 0.42),
+    0 0 18px var(--bubble-glow);
+
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  transform: translateY(0);
+
+  transition:
+    transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    filter 140ms ease;
+
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* ---------------------------------------------------------
+   CHROME THEMES
+   --------------------------------------------------------- */
+
+.kronos-theme-silver {
+  --bubble-main: var(--kronos-silver);
+  --bubble-light: var(--kronos-silver-light);
+  --bubble-dark: var(--kronos-silver-dark);
+  --bubble-glow: rgba(215, 217, 219, 0.22);
+}
+
+.kronos-theme-copper {
+  --bubble-main: var(--kronos-copper);
+  --bubble-light: var(--kronos-copper-light);
+  --bubble-dark: var(--kronos-copper-dark);
+  --bubble-glow: rgba(196, 123, 76, 0.25);
+}
+
+.kronos-theme-pink {
+  --bubble-main: var(--kronos-pink);
+  --bubble-light: var(--kronos-pink-light);
+  --bubble-dark: var(--kronos-pink-dark);
+  --bubble-glow: rgba(231, 131, 181, 0.25);
+}
+
+/* ---------------------------------------------------------
+   REFLECTION
+   --------------------------------------------------------- */
+
+.kronos-bubble-highlight {
+  position: absolute;
+
+  top: 3px;
+  left: 12%;
+
+  width: 48%;
+  height: 38%;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.42),
+      rgba(255, 255, 255, 0)
+    );
+
+  opacity: 0.8;
+
+  pointer-events: none;
+
+  transform: rotate(-7deg);
+}
+
+/* ---------------------------------------------------------
+   CONTENT
+   --------------------------------------------------------- */
+
+.kronos-button-icon,
+.kronos-button-label {
+  position: relative;
+  z-index: 2;
+}
+
+.kronos-button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+}
+
+.kronos-button-label {
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   SIZES
+   --------------------------------------------------------- */
+
+.kronos-bubble-sm {
+  min-height: 38px;
+  min-width: 92px;
+  padding: 8px 15px;
+
+  font-size: 0.82rem;
+
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.24),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.32),
+    0 4px 0 var(--bubble-dark),
+    0 7px 18px rgba(0, 0, 0, 0.38),
+    0 0 14px var(--bubble-glow);
+}
+
+.kronos-bubble-md {
+  min-height: 46px;
+}
+
+.kronos-bubble-lg {
+  min-height: 56px;
+  min-width: 150px;
+  padding: 14px 25px;
+
+  font-size: 1rem;
+
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.3),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.38),
+    0 6px 0 var(--bubble-dark),
+    0 13px 28px rgba(0, 0, 0, 0.46),
+    0 0 22px var(--bubble-glow);
+}
+
+/* ---------------------------------------------------------
+   HOVER
+   --------------------------------------------------------- */
+
+.kronos-bubble:hover:not(:disabled) {
+  border-color: var(--bubble-light);
+
+  filter: brightness(1.12);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.34),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.32),
+    0 7px 0 var(--bubble-dark),
+    0 13px 30px rgba(0, 0, 0, 0.48),
+    0 0 25px var(--bubble-glow);
+}
+
+/* ---------------------------------------------------------
+   PRESS
+   --------------------------------------------------------- */
+
+.kronos-bubble:active:not(:disabled) {
+  transform: translateY(3px) scale(0.97);
+
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.18),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.4),
+    0 2px 0 var(--bubble-dark),
+    0 5px 12px rgba(0, 0, 0, 0.38),
+    0 0 14px var(--bubble-glow);
+}
+
+/* ---------------------------------------------------------
+   BUBBLE REBOUND
+   --------------------------------------------------------- */
+
+@keyframes kronosBubbleBounce {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  18% {
+    transform: translateY(3px) scale(0.94);
+  }
+
+  38% {
+    transform: translateY(-5px) scale(1.045);
+  }
+
+  58% {
+    transform: translateY(2px) scale(0.985);
+  }
+
+  78% {
+    transform: translateY(-2px) scale(1.015);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.kronos-bubble-bounce {
+  animation:
+    kronosBubbleBounce 460ms
+    cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------------------------------------------------------
+   FOCUS
+   --------------------------------------------------------- */
+
+.kronos-bubble:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.12),
+    0 0 0 5px var(--bubble-glow),
+    inset 0 2px 2px rgba(255, 255, 255, 0.28),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.35),
+    0 5px 0 var(--bubble-dark),
+    0 10px 24px rgba(0, 0, 0, 0.42);
+}
+
+/* ---------------------------------------------------------
+   DISABLED
+   --------------------------------------------------------- */
+
+.kronos-bubble:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.45;
+
+  filter: grayscale(0.35);
+
+  transform: none;
+
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.1),
+    0 2px 0 var(--bubble-dark),
+    0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------------------------------------------------------
+   LOADING
+   --------------------------------------------------------- */
+
+.kronos-bubble-loading {
+  cursor: wait;
+  pointer-events: none;
+}
+
+.kronos-button-spinner {
+  position: relative;
+  z-index: 2;
+
+  width: 16px;
+  height: 16px;
+
+  flex: 0 0 auto;
+
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-top-color: var(--bubble-light);
+
+  border-radius: 50%;
+
+  animation: kronosButtonSpin 700ms linear infinite;
+}
+
+@keyframes kronosButtonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .kronos-bubble {
+    transition: none;
+  }
+
+  .kronos-bubble-bounce,
+  .kronos-button-spinner {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .kronos-bubble {
+    min-height: 44px;
+    min-width: 104px;
+    padding: 10px 17px;
+  }
+
+  .kronos-bubble-lg {
+    min-height: 52px;
+    min-width: 132px;
+    padding: 12px 21px;
+  }
+}
