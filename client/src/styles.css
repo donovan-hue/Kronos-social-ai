@@ -1290,3 +1290,727 @@ select:focus {
     transition-duration: 0.01ms !important;
   }
       }
+/* =========================================================
+   KRONOS SOCIAL AI — PREMIUM VISUAL LAYER
+   STEP 2 — TYPOGRAPHY / SPACING / 3D BUBBLE / THEMES
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   PREMIUM TYPOGRAPHY
+   --------------------------------------------------------- */
+
+:root {
+  --kronos-font-display:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  --kronos-font-body:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  --kronos-space-1: 4px;
+  --kronos-space-2: 8px;
+  --kronos-space-3: 12px;
+  --kronos-space-4: 16px;
+  --kronos-space-5: 20px;
+  --kronos-space-6: 24px;
+  --kronos-space-7: 32px;
+  --kronos-space-8: 40px;
+  --kronos-space-9: 48px;
+  --kronos-space-10: 64px;
+
+  --kronos-bubble-height: 46px;
+  --kronos-bubble-padding: 0 20px;
+  --kronos-bubble-radius: 999px;
+}
+
+body {
+  font-family: var(--kronos-font-body);
+  letter-spacing: -0.01em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.logo,
+.brand,
+.kronos-logo {
+  font-family: var(--kronos-font-display);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+h2 {
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+h4 {
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+
+/* ---------------------------------------------------------
+   PREMIUM TEXT UTILITIES
+   --------------------------------------------------------- */
+
+.kronos-display {
+  font-family: var(--kronos-font-display);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+.kronos-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.kronos-caption {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--kronos-muted);
+}
+
+.kronos-gradient-text {
+  background: linear-gradient(
+    105deg,
+    var(--kronos-silver-light),
+    var(--kronos-silver),
+    var(--kronos-silver-dark),
+    var(--kronos-silver-light)
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+
+/* ---------------------------------------------------------
+   PREMIUM SPACING
+   --------------------------------------------------------- */
+
+.kronos-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.kronos-stack-1 {
+  gap: var(--kronos-space-1);
+}
+
+.kronos-stack-2 {
+  gap: var(--kronos-space-2);
+}
+
+.kronos-stack-3 {
+  gap: var(--kronos-space-3);
+}
+
+.kronos-stack-4 {
+  gap: var(--kronos-space-4);
+}
+
+.kronos-stack-5 {
+  gap: var(--kronos-space-5);
+}
+
+.kronos-stack-6 {
+  gap: var(--kronos-space-6);
+}
+
+.kronos-row {
+  display: flex;
+  align-items: center;
+}
+
+.kronos-row-2 {
+  gap: var(--kronos-space-2);
+}
+
+.kronos-row-3 {
+  gap: var(--kronos-space-3);
+}
+
+.kronos-row-4 {
+  gap: var(--kronos-space-4);
+}
+
+.kronos-row-5 {
+  gap: var(--kronos-space-5);
+}
+
+
+/* ---------------------------------------------------------
+   3D BUBBLE BUTTON SYSTEM
+   --------------------------------------------------------- */
+
+.kronos-bubble {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: var(--kronos-bubble-height);
+  padding: var(--kronos-bubble-padding);
+
+  overflow: hidden;
+
+  border: 1px solid var(--kronos-silver);
+  border-radius: var(--kronos-bubble-radius);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(245, 246, 247, 0.32) 0%,
+      rgba(215, 217, 219, 0.16) 24%,
+      rgba(104, 107, 109, 0.10) 55%,
+      rgba(3, 3, 3, 0.55) 100%
+    );
+
+  color: var(--kronos-text);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.40),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.55),
+    0 5px 12px rgba(0, 0, 0, 0.55),
+    0 10px 25px rgba(0, 0, 0, 0.30);
+
+  font-weight: 700;
+  letter-spacing: -0.015em;
+
+  transform: translateY(0) scale(1);
+
+  transition:
+    transform 180ms cubic-bezier(0.2, 1.4, 0.4, 1),
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Bubble highlight */
+
+.kronos-bubble::before {
+  content: "";
+
+  position: absolute;
+
+  top: 3px;
+  left: 12%;
+
+  width: 48%;
+  height: 35%;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.28),
+      rgba(255, 255, 255, 0)
+    );
+
+  pointer-events: none;
+
+  opacity: 0.75;
+}
+
+/* Chrome reflection */
+
+.kronos-bubble::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent 25%,
+      rgba(255, 255, 255, 0.10) 45%,
+      transparent 65%
+    );
+
+  opacity: 0;
+
+  transform: translateX(-100%);
+
+  transition:
+    transform 450ms ease,
+    opacity 250ms ease;
+
+  pointer-events: none;
+}
+
+.kronos-bubble:hover {
+  border-color: var(--kronos-silver-light);
+
+  transform:
+    translateY(-3px)
+    scale(1.025);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.50),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.60),
+    0 8px 18px rgba(0, 0, 0, 0.60),
+    0 0 25px rgba(215, 217, 219, 0.13);
+}
+
+.kronos-bubble:hover::after {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+/*
+ * Physical bubble rebound.
+ * The button compresses and then rebounds when touched.
+ */
+
+.kronos-bubble:active {
+  transform:
+    translateY(4px)
+    scale(0.91);
+
+  box-shadow:
+    inset 0 3px 7px rgba(0, 0, 0, 0.65),
+    0 2px 5px rgba(0, 0, 0, 0.50);
+
+  transition:
+    transform 70ms cubic-bezier(0.3, 0, 0.7, 1);
+}
+
+.kronos-bubble:focus-visible {
+  outline: none;
+
+  border-color: var(--kronos-silver-light);
+
+  box-shadow:
+    0 0 0 3px rgba(215, 217, 219, 0.12),
+    0 0 25px rgba(215, 217, 219, 0.12);
+}
+
+
+/* ---------------------------------------------------------
+   BUBBLE SIZES
+   --------------------------------------------------------- */
+
+.kronos-bubble-sm {
+  min-height: 38px;
+  padding: 0 15px;
+  font-size: 0.82rem;
+}
+
+.kronos-bubble-lg {
+  min-height: 54px;
+  padding: 0 26px;
+  font-size: 1rem;
+}
+
+.kronos-bubble-icon {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+
+/* ---------------------------------------------------------
+   SILVER CHROME THEME — SOCIAL
+   --------------------------------------------------------- */
+
+.kronos-theme-silver {
+  --kronos-theme-main: var(--kronos-silver);
+  --kronos-theme-light: var(--kronos-silver-light);
+  --kronos-theme-dark: var(--kronos-silver-dark);
+}
+
+.kronos-theme-silver .kronos-bubble {
+  border-color: var(--kronos-theme-main);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(245, 246, 247, 0.32),
+      rgba(215, 217, 219, 0.15),
+      rgba(104, 107, 109, 0.08)
+    );
+}
+
+.kronos-theme-silver .kronos-bubble:hover {
+  border-color: var(--kronos-theme-light);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.50),
+    0 8px 18px rgba(0, 0, 0, 0.60),
+    0 0 25px rgba(215, 217, 219, 0.14);
+}
+
+
+/* ---------------------------------------------------------
+   COPPER CHROME THEME — VIDEO AI
+   --------------------------------------------------------- */
+
+.kronos-theme-copper {
+  --kronos-theme-main: var(--kronos-copper);
+  --kronos-theme-light: var(--kronos-copper-light);
+  --kronos-theme-dark: var(--kronos-copper-dark);
+}
+
+.kronos-theme-copper {
+  border-color: rgba(196, 123, 76, 0.32);
+}
+
+.kronos-theme-copper .kronos-bubble {
+  border-color: var(--kronos-copper);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(239, 176, 131, 0.30),
+      rgba(196, 123, 76, 0.15),
+      rgba(117, 69, 45, 0.10),
+      rgba(3, 3, 3, 0.60)
+    );
+}
+
+.kronos-theme-copper .kronos-bubble:hover {
+  border-color: var(--kronos-copper-light);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.40),
+    0 8px 18px rgba(0, 0, 0, 0.60),
+    0 0 28px rgba(196, 123, 76, 0.18);
+}
+
+.kronos-theme-copper .kronos-gradient-text {
+  background:
+    linear-gradient(
+      105deg,
+      var(--kronos-copper-light),
+      var(--kronos-copper),
+      var(--kronos-copper-dark),
+      var(--kronos-copper-light)
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+
+/* ---------------------------------------------------------
+   PINK CHROME THEME — SCRIPT AI
+   --------------------------------------------------------- */
+
+.kronos-theme-pink {
+  --kronos-theme-main: var(--kronos-pink);
+  --kronos-theme-light: var(--kronos-pink-light);
+  --kronos-theme-dark: var(--kronos-pink-dark);
+}
+
+.kronos-theme-pink {
+  border-color: rgba(231, 131, 181, 0.32);
+}
+
+.kronos-theme-pink .kronos-bubble {
+  border-color: var(--kronos-pink);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 183, 220, 0.30),
+      rgba(231, 131, 181, 0.15),
+      rgba(124, 64, 95, 0.10),
+      rgba(3, 3, 3, 0.60)
+    );
+}
+
+.kronos-theme-pink .kronos-bubble:hover {
+  border-color: var(--kronos-pink-light);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.40),
+    0 8px 18px rgba(0, 0, 0, 0.60),
+    0 0 28px rgba(231, 131, 181, 0.18);
+}
+
+.kronos-theme-pink .kronos-gradient-text {
+  background:
+    linear-gradient(
+      105deg,
+      var(--kronos-pink-light),
+      var(--kronos-pink),
+      var(--kronos-pink-dark),
+      var(--kronos-pink-light)
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+
+/* ---------------------------------------------------------
+   CHROME PANEL
+   --------------------------------------------------------- */
+
+.kronos-chrome-panel {
+  position: relative;
+
+  overflow: hidden;
+
+  border: 1px solid var(--kronos-border);
+
+  border-radius: var(--kronos-radius-lg);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.025)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 15px 45px rgba(0, 0, 0, 0.55);
+
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.kronos-chrome-panel::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 8%;
+
+  width: 84%;
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.30),
+      transparent
+    );
+
+  pointer-events: none;
+}
+
+
+/* ---------------------------------------------------------
+   ICON BUTTON
+   --------------------------------------------------------- */
+
+.kronos-icon-button {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+
+  padding: 0;
+
+  border: 1px solid var(--kronos-border-strong);
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      rgba(255, 255, 255, 0.22),
+      rgba(255, 255, 255, 0.04) 42%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+
+  color: var(--kronos-text);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.30),
+    inset 0 -3px 7px rgba(0, 0, 0, 0.45),
+    0 6px 15px rgba(0, 0, 0, 0.45);
+
+  transition:
+    transform 180ms cubic-bezier(0.2, 1.4, 0.4, 1),
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.kronos-icon-button:hover {
+  transform: translateY(-3px) scale(1.05);
+
+  border-color: var(--kronos-silver-light);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.40),
+    0 8px 20px rgba(0, 0, 0, 0.60),
+    0 0 20px rgba(215, 217, 219, 0.10);
+}
+
+.kronos-icon-button:active {
+  transform: translateY(3px) scale(0.88);
+}
+
+
+/* ---------------------------------------------------------
+   PREMIUM DIVIDER
+   --------------------------------------------------------- */
+
+.kronos-divider {
+  width: 100%;
+  height: 1px;
+
+  border: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--kronos-border-strong),
+      transparent
+    );
+}
+
+
+/* ---------------------------------------------------------
+   GLOW STATES
+   --------------------------------------------------------- */
+
+.kronos-glow {
+  box-shadow:
+    0 0 18px rgba(215, 217, 219, 0.10),
+    0 0 40px rgba(215, 217, 219, 0.05);
+}
+
+.kronos-theme-copper .kronos-glow {
+  box-shadow:
+    0 0 18px rgba(196, 123, 76, 0.14),
+    0 0 40px rgba(196, 123, 76, 0.06);
+}
+
+.kronos-theme-pink .kronos-glow {
+  box-shadow:
+    0 0 18px rgba(231, 131, 181, 0.14),
+    0 0 40px rgba(231, 131, 181, 0.06);
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .container,
+  .page-container,
+  .content-container {
+    width: min(100% - 20px, 1180px);
+  }
+
+  .page {
+    padding-top: 16px;
+    padding-bottom: 40px;
+  }
+
+  .profile-main {
+    align-items: flex-start;
+  }
+
+  .profile-avatar {
+    width: 82px;
+    height: 82px;
+  }
+
+  .profile-stats {
+    gap: 18px;
+  }
+
+  .kronos-bubble {
+    min-height: 44px;
+    padding: 0 17px;
+  }
+
+  .kronos-bubble-icon {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .profile-main {
+    flex-direction: column;
+  }
+
+  .profile-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .kronos-bubble {
+    min-height: 42px;
+    padding: 0 15px;
+    font-size: 0.86rem;
+  }
+
+  .kronos-icon-button {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   REDUCED MOTION ACCESSIBILITY
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+   }
