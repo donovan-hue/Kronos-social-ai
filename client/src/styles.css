@@ -2014,3 +2014,92 @@ h4 {
     animation-iteration-count: 1 !important;
   }
    }
+/* =========================================================
+   KRONOS BUTTON COMPONENT
+   ========================================================= */
+
+.kronos-button-icon {
+  position: relative;
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-right: 8px;
+
+  font-size: 1em;
+  line-height: 1;
+}
+
+.kronos-button-label {
+  position: relative;
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   BUTTON LOADING / DISABLED
+   --------------------------------------------------------- */
+
+.kronos-bubble:disabled {
+  pointer-events: none;
+}
+
+
+/* ---------------------------------------------------------
+   COPPER BUTTON
+   --------------------------------------------------------- */
+
+.kronos-theme-copper .kronos-bubble {
+  color: #ffffff;
+}
+
+
+/* ---------------------------------------------------------
+   PINK BUTTON
+   --------------------------------------------------------- */
+
+.kronos-theme-pink .kronos-bubble {
+  color: #ffffff;
+}
+
+
+/* ---------------------------------------------------------
+   TOUCH OPTIMIZATION
+   --------------------------------------------------------- */
+
+.kronos-bubble,
+.kronos-icon-button {
+  touch-action: manipulation;
+}
+
+
+/* ---------------------------------------------------------
+   BUTTON GROUP
+   --------------------------------------------------------- */
+
+.kronos-button-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--kronos-space-3);
+}
+
+.kronos-button-group--center {
+  justify-content: center;
+}
+
+.kronos-button-group--end {
+  justify-content: flex-end;
+}
+
+.kronos-button-group--full > .kronos-bubble {
+  flex: 1 1 auto;
+}
