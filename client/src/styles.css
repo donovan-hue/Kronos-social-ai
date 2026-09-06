@@ -2103,3 +2103,231 @@ h4 {
 .kronos-button-group--full > .kronos-bubble {
   flex: 1 1 auto;
 }
+/* =========================================================
+   KRONOS CARD COMPONENT
+   ========================================================= */
+
+.kronos-card {
+  position: relative;
+  isolation: isolate;
+
+  width: 100%;
+  overflow: hidden;
+
+  border: 1px solid var(--kronos-border-silver);
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.018) 45%,
+      rgba(0, 0, 0, 0.72)
+    );
+
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.kronos-card::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+  z-index: -1;
+
+  background:
+    linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.10),
+      transparent 28%,
+      transparent 72%,
+      rgba(255, 255, 255, 0.025)
+    );
+
+  opacity: 0.75;
+}
+
+.kronos-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* =========================================================
+   PADDING
+   ========================================================= */
+
+.kronos-card--padding-none .kronos-card-body {
+  padding: 0;
+}
+
+.kronos-card--padding-sm .kronos-card-body {
+  padding: var(--kronos-space-3);
+}
+
+.kronos-card--padding-md .kronos-card-body {
+  padding: var(--kronos-space-5);
+}
+
+.kronos-card--padding-lg .kronos-card-body {
+  padding: var(--kronos-space-7);
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.kronos-card-header {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: var(--kronos-space-4);
+
+  padding: var(--kronos-space-5);
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kronos-card-heading {
+  min-width: 0;
+}
+
+.kronos-card-title {
+  margin: 0;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+
+  letter-spacing: -0.02em;
+
+  color: #ffffff;
+}
+
+.kronos-card-subtitle {
+  margin: 6px 0 0;
+
+  font-size: 0.86rem;
+  line-height: 1.5;
+
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.kronos-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  flex-shrink: 0;
+
+  gap: var(--kronos-space-2);
+}
+
+/* =========================================================
+   BODY
+   ========================================================= */
+
+.kronos-card-body {
+  position: relative;
+  width: 100%;
+}
+
+/* =========================================================
+   SILVER — SOCIAL NETWORK
+   ========================================================= */
+
+.kronos-card.kronos-theme-silver {
+  border-color: var(--kronos-border-silver);
+}
+
+.kronos-card.kronos-theme-silver:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+/* =========================================================
+   COPPER — VIDEO AI
+   ========================================================= */
+
+.kronos-card.kronos-theme-copper {
+  border-color: var(--kronos-border-copper);
+}
+
+.kronos-card.kronos-theme-copper:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+/* =========================================================
+   PINK — SCRIPT AI
+   ========================================================= */
+
+.kronos-card.kronos-theme-pink {
+  border-color: var(--kronos-border-pink);
+}
+
+.kronos-card.kronos-theme-pink:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .kronos-card {
+    border-radius: 20px;
+  }
+
+  .kronos-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .kronos-card-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .kronos-card--padding-md .kronos-card-body {
+    padding: var(--kronos-space-4);
+  }
+
+  .kronos-card--padding-lg .kronos-card-body {
+    padding: var(--kronos-space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kronos-card {
+    transition: none;
+  }
+
+  .kronos-card:hover {
+    transform: none;
+  }
+}
