@@ -21,66 +21,24 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import { connectSocket, disconnectSocket } from "./services/socket";
 
 function AppContent() {
-  const [user, setUser] = useState(() => {
-    try {
-      const token = localStorage.getItem("kronos_token");
-      const storedUser = localStorage.getItem("kronos_user");
-      return token && storedUser ? JSON.parse(storedUser) : null;
-    } catch {
-      localStorage.removeItem("kronos_token");
-      localStorage.removeItem("kronos_user");
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    const interceptor = axios.interceptors.response.use((response) => response, (error) => {
-      if (error.response?.status === 401) logout();
-      return Promise.reject(error);
-    });
-    return () => axios.interceptors.response.eject(interceptor);
-  }, []);
-
-  useEffect(() => {
-    if (!user) { disconnectSocket(); return undefined; }
-    connectSocket(localStorage.getItem("kronos_token"));
-    return () => disconnectSocket();
-  }, [user]);
-
-  function logout() {
-    localStorage.removeItem("kronos_token");
-    localStorage.removeItem("kronos_user");
-    setUser(null);
-  }
-
+  const [user, setUser] = useState(() => { try { const token = localStorage.getItem("kronos_token"); const storedUser = localStorage.getItem("kronos_user"); return token && storedUser ? JSON.parse(storedUser) : null; } catch { localStorage.removeItem("kronos_token"); localStorage.removeItem("kronos_user"); return null; } });
+  useEffect(() => { const interceptor = axios.interceptors.response.use((response) => response, (error) => { if (error.response?.status === 401) logout(); return Promise.reject(error); }); return () => axios.interceptors.response.eject(interceptor); }, []);
+  useEffect(() => { if (!user) { disconnectSocket(); return undefined; } connectSocket(localStorage.getItem("kronos_token")); return () => disconnectSocket(); }, [user]);
+  function logout() { localStorage.removeItem("kronos_token"); localStorage.removeItem("kronos_user"); setUser(null); }
   return <Routes>
-    <Route path="/login" element={user ? <Navigate replace to="/home" /> : <Auth onLogin={setUser} />} />
+    <Route path="/login" element={user ? <Navigate replace to="/home" /> : <Auth onLogin={setUser} initialMode="login" />} />
+    <Route path="/register" element={user ? <Navigate replace to="/home" /> : <Auth onLogin={setUser} initialMode="register" />} />
     <Route path="/" element={<Navigate replace to={user ? "/home" : "/login"} />} />
-    <Route element={<ProtectedRoute user={user} />}>
-      <Route element={<AppLayout user={user} />}>
-        <Route path="/home" element={<SocialPage />} />
-        <Route path="/social" element={<SocialPage />} />
-        <Route path="/ai" element={<AICenter />} />
-        <Route path="/ai/image" element={<ImageGenerator />} />
-        <Route path="/ai/script" element={<ScriptGenerator />} />
-        <Route path="/ai/video" element={<VideoGenerator />} />
-        <Route path="/ai/video/jobs" element={<VideoJobs />} />
-        <Route path="/library" element={<MediaLibrary />} />
-        <Route path="/create-post" element={<CreatePost />} />
-        <Route path="/post/:id" element={<PostDetail />} />
-        <Route path="/users" element={<UserSearch />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/users/:id" element={<Profile />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/messages/:userId" element={<Messages />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/settings" element={<Settings onLogout={logout} />} />
-      </Route>
-    </Route>
+    <Route element={<ProtectedRoute user={user} />}><Route element={<AppLayout user={user} />}>
+      <Route path="/home" element={<SocialPage />} /><Route path="/feed" element={<SocialPage />} /><Route path="/social" element={<SocialPage />} />
+      <Route path="/explore" element={<UserSearch />} /><Route path="/search" element={<UserSearch />} />
+      <Route path="/create" element={<CreatePost />} /><Route path="/create-post" element={<CreatePost />} />
+      <Route path="/kairos" element={<AICenter />} /><Route path="/kairos/image" element={<ImageGenerator />} /><Route path="/kairos/video" element={<VideoGenerator />} /><Route path="/kairos/script" element={<ScriptGenerator />} /><Route path="/kairos/history" element={<MediaLibrary />} />
+      <Route path="/ai" element={<AICenter />} /><Route path="/ai/image" element={<ImageGenerator />} /><Route path="/ai/script" element={<ScriptGenerator />} /><Route path="/ai/video" element={<VideoGenerator />} /><Route path="/ai/video/jobs" element={<VideoJobs />} /><Route path="/library" element={<MediaLibrary />} />
+      <Route path="/post/:id" element={<PostDetail />} /><Route path="/users" element={<UserSearch />} /><Route path="/profile" element={<Profile />} /><Route path="/profile/:username" element={<Profile />} /><Route path="/users/:id" element={<Profile />} /><Route path="/messages" element={<Messages />} /><Route path="/messages/:userId" element={<Messages />} /><Route path="/notifications" element={<Notifications />} /><Route path="/settings" element={<Settings onLogout={logout} />} /><Route path="/settings/profile" element={<Settings onLogout={logout} />} />
+    </Route></Route>
     <Route path="*" element={<Navigate replace to={user ? "/home" : "/login"} />} />
   </Routes>;
 }
 
-export default function App() {
-  return <BrowserRouter><AppContent /></BrowserRouter>;
-}
+export default function App() { return <BrowserRouter><AppContent /></BrowserRouter>; }
