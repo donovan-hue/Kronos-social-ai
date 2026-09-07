@@ -5,24 +5,31 @@ async function chat({
   history = [],
   system = "Eres Kronos AI, un asistente inteligente integrado en Kronos Social AI."
 }) {
-  if (!message || typeof message !== "string") {
-    throw new Error("El mensaje es obligatorio");
+  if (typeof message !== "string" || !message.trim()) {
+    throw new Error("MESSAGE_REQUIRED");
   }
 
-  const messages = [
+  const normalizedHistory = [
     {
       role: "system",
       content: system
     },
-    ...history,
-    {
-      role: "user",
-      content: message
-    }
+    ...history
+      .filter(
+        item =>
+          item &&
+          ["user", "assistant"].includes(item.role) &&
+          typeof item.content === "string"
+      )
+      .map(item => ({
+        role: item.role,
+        content: item.content
+      }))
   ];
 
   return generateResponse({
-    messages
+    message: message.trim(),
+    history: normalizedHistory
   });
 }
 

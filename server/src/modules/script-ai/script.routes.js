@@ -364,6 +364,44 @@ router.get("/history", auth, requireUser, async (req, res) => {
   }
 });
 
+router.put("/projects/:id", auth, requireUser, async (req, res) => {
+  try {
+    const project = await ScriptProject.findOne({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        error: "Proyecto no encontrado"
+      });
+    }
+
+    const payload = getProjectPayload(req.body);
+    Object.assign(project, payload);
+    await project.save();
+
+    return res.json({
+      project
+    });
+  } catch (error) {
+    if (
+      error?.message === "SCRIPT_INVALID_RESPONSE" ||
+      error?.message === "PROJECT_TITLE_TOO_LONG" ||
+      error?.message === "PROJECT_METADATA_INVALID"
+    ) {
+      return res.status(400).json({
+        error: "Los datos del proyecto no son válidos"
+      });
+    }
+
+    console.error("SCRIPT_PROJECT_UPDATE_ERROR:", error);
+    return res.status(500).json({
+      error: "No se pudo actualizar el proyecto"
+    });
+  }
+});
+
 router.put("/:id", auth, requireUser, async (req, res) => {
   try {
     const script = await Script.findOne({
@@ -401,44 +439,6 @@ router.put("/:id", auth, requireUser, async (req, res) => {
 
     return res.status(500).json({
       error: "No se pudo actualizar el script"
-    });
-  }
-});
-
-router.put("/projects/:id", auth, requireUser, async (req, res) => {
-  try {
-    const project = await ScriptProject.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    });
-
-    if (!project) {
-      return res.status(404).json({
-        error: "Proyecto no encontrado"
-      });
-    }
-
-    const payload = getProjectPayload(req.body);
-    Object.assign(project, payload);
-    await project.save();
-
-    return res.json({
-      project
-    });
-  } catch (error) {
-    if (
-      error?.message === "SCRIPT_INVALID_RESPONSE" ||
-      error?.message === "PROJECT_TITLE_TOO_LONG" ||
-      error?.message === "PROJECT_METADATA_INVALID"
-    ) {
-      return res.status(400).json({
-        error: "Los datos del proyecto no son válidos"
-      });
-    }
-
-    console.error("SCRIPT_PROJECT_UPDATE_ERROR:", error);
-    return res.status(500).json({
-      error: "No se pudo actualizar el proyecto"
     });
   }
 });

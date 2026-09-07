@@ -117,12 +117,17 @@ const authLimiter = rateLimit({
   }
 });
 
-app.get("/health", (req, res) => {
+const healthResponse = (req, res) => {
   res.json({
     ok: true,
-    service: "kronos-social-ai"
+    service: "kronos-social-ai",
+    realtime: true,
+    timestamp: new Date().toISOString()
   });
-});
+};
+
+app.get("/health", healthResponse);
+app.get("/api/health", healthResponse);
 
 
 app.use(
