@@ -1,0 +1,68 @@
+* {
+  border-color: var(--k-border);
+}
+
+body {
+  background: var(--k-bg);
+  color: var(--k-text);
+  font-family: var(--k-font-sans);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+button,
+input,
+textarea,
+select {
+  min-height: 44px;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.k-surface {
+  background: var(--k-surface);
+  border: 1px solid var(--k-border);
+  border-radius: var(--k-radius-lg);
+  box-shadow: var(--k-shadow-sm);
+}
+
+.k-metal-surface {
+  background: linear-gradient(145deg, oklch(91% 0.008 255 / 0.11), oklch(16% 0.01 255 / 0.94));
+  border: 1px solid var(--k-border-strong);
+  border-radius: var(--k-radius-lg);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.08), var(--k-shadow-md);
+}
+
+.k-action {
+  border: 1px solid var(--k-blue);
+  border-radius: var(--k-radius-pill);
+  background: var(--k-blue);
+  color: var(--k-text);
+  transition: transform var(--k-transition), background var(--k-transition), box-shadow var(--k-transition);
+}
+
+.k-action:hover:not(:disabled) {
+  background: var(--k-blue-hover);
+  box-shadow: 0 0 24px var(--k-blue-soft);
+  transform: translateY(-1px);
+}
+
+.k-action:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.k-ai-state {
+  border-color: var(--k-blue);
+  box-shadow: 0 0 20px var(--k-blue-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
