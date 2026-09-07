@@ -20,11 +20,20 @@ import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { connectSocket, disconnectSocket } from "./services/socket";
 
+function readSession() {
+  try {
+    const storage = localStorage.getItem("kronos_token") ? localStorage : sessionStorage;
+    const token = storage.getItem("kronos_token");
+    const storedUser = storage.getItem("kronos_user");
+    return token && storedUser ? JSON.parse(storedUser) : null;
+  } catch { return null; }
+}
+
 function AppContent() {
-  const [user, setUser] = useState(() => { try { const token = localStorage.getItem("kronos_token"); const storedUser = localStorage.getItem("kronos_user"); return token && storedUser ? JSON.parse(storedUser) : null; } catch { localStorage.removeItem("kronos_token"); localStorage.removeItem("kronos_user"); return null; } });
+  const [user, setUser] = useState(readSession);
   useEffect(() => { const interceptor = axios.interceptors.response.use((response) => response, (error) => { if (error.response?.status === 401) logout(); return Promise.reject(error); }); return () => axios.interceptors.response.eject(interceptor); }, []);
-  useEffect(() => { if (!user) { disconnectSocket(); return undefined; } connectSocket(localStorage.getItem("kronos_token")); return () => disconnectSocket(); }, [user]);
-  function logout() { localStorage.removeItem("kronos_token"); localStorage.removeItem("kronos_user"); setUser(null); }
+  useEffect(() => { if (!user) { disconnectSocket(); return undefined; } connectSocket(localStorage.getItem("kronos_token") || sessionStorage.getItem("kronos_token")); return () => disconnectSocket(); }, [user]);
+  function logout() { localStorage.removeItem("kronos_token"); localStorage.removeItem("kronos_user"); sessionStorage.removeItem("kronos_token"); sessionStorage.removeItem("kronos_user"); setUser(null); }
   return <Routes>
     <Route path="/login" element={user ? <Navigate replace to="/home" /> : <Auth onLogin={setUser} initialMode="login" />} />
     <Route path="/register" element={user ? <Navigate replace to="/home" /> : <Auth onLogin={setUser} initialMode="register" />} />
