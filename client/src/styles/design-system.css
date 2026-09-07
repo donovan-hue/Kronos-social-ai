@@ -88,7 +88,7 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; opacity: 0.48; }
 .k-ai-form textarea { min-height: 120px; padding: var(--k-space-3); resize: vertical; }
 .k-ai-form select { min-height: 44px; }
 .k-ai-result { min-height: 420px; overflow: hidden; display: grid; place-items: center; }
-.k-ai-result img { width: 100%; height: 100%; min-height: 420px; object-fit: cover; }
+.k-ai-result img, .k-ai-result video { width: 100%; max-height: 640px; min-height: 420px; object-fit: cover; }
 .k-kairos-placeholder { color: var(--k-blue-hover); font-size: 3rem; }
 .k-history { margin-top: var(--k-space-7); }
 .k-section-heading { align-items: center; margin-bottom: var(--k-space-4); }
@@ -96,6 +96,10 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; opacity: 0.48; }
 .k-history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--k-space-3); }
 .k-history-item { overflow: hidden; padding: 0; border: 1px solid var(--k-border); border-radius: var(--k-radius-md); background: var(--k-surface); }
 .k-history-item img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.k-history-row { display: flex; align-items: center; gap: var(--k-space-4); width: 100%; padding: var(--k-space-4); margin-bottom: var(--k-space-2); color: var(--k-text); text-align: left; }
+.k-history-row span { flex: 1; overflow: hidden; color: var(--k-text-soft); text-overflow: ellipsis; white-space: nowrap; }
+.k-script-result { display: block; min-height: 0; padding: var(--k-space-5); }
+.k-script-result pre { overflow: auto; max-height: 560px; margin: 0 0 var(--k-space-4); white-space: pre-wrap; color: var(--k-text-soft); font: inherit; }
 .k-muted { color: var(--k-muted); }
-@media (max-width: 800px) { .k-topbar { grid-template-columns: auto 1fr auto; padding: 0 var(--k-space-4); } .k-search-trigger span, .k-navigation { display: none; } .k-search-trigger { justify-content: center; } .k-mobile-navigation { position: fixed; inset: auto 0 0; z-index: 20; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; padding: var(--k-space-2); background: oklch(8% 0.008 255 / 0.96); border-top: 1px solid var(--k-border); backdrop-filter: blur(16px); } .k-mobile-navigation a { flex-direction: column; justify-content: center; gap: 2px; min-height: 56px; padding: 4px; font-size: 0.68rem; } .k-main-content { margin-left: 0; padding-bottom: 72px; } .k-main-content > .page { width: min(100% - 24px, 1040px); padding-top: var(--k-space-5); } .k-floating-navigation { bottom: 78px; } .k-ai-workspace, .k-kairos-grid { grid-template-columns: 1fr; } .k-kairos-hero { align-items: flex-start; flex-direction: column; padding: var(--k-space-5); } .k-page-header, .k-composer-heading { flex-direction: column; } .k-comments form { flex-direction: column; } }
+@media (max-width: 800px) { .k-topbar { grid-template-columns: auto 1fr auto; padding: 0 var(--k-space-4); } .k-search-trigger span, .k-navigation { display: none; } .k-search-trigger { justify-content: center; } .k-mobile-navigation { position: fixed; inset: auto 0 0; z-index: 20; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; padding: var(--k-space-2); background: oklch(8% 0.008 255 / 0.96); border-top: 1px solid var(--k-border); backdrop-filter: blur(16px); } .k-mobile-navigation a { flex-direction: column; justify-content: center; gap: 2px; min-height: 56px; padding: 4px; font-size: 0.68rem; } .k-main-content { margin-left: 0; padding-bottom: 72px; } .k-main-content > .page { width: min(100% - 24px, 1040px); padding-top: var(--k-space-5); } .k-floating-navigation { bottom: 78px; } .k-ai-workspace, .k-kairos-grid { grid-template-columns: 1fr; } .k-kairos-hero { align-items: flex-start; flex-direction: column; padding: var(--k-space-5); } .k-page-header, .k-composer-heading { flex-direction: column; } .k-comments form { flex-direction: column; } .k-history-row { align-items: flex-start; flex-wrap: wrap; } .k-history-row span { flex-basis: 100%; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
