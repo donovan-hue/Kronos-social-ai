@@ -1,249 +1,65 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import CreatePost from "./CreatePost";
 
-const API =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
-
-function getAuthConfig() {
-  const token =
-    localStorage.getItem("kronos_token");
-
-  return token
-    ? {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    : {};
-}
-
-function formatDate(date) {
-  if (!date) {
-    return "";
-  }
-
-  try {
-    return new Date(date).toLocaleString("es-MX", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return "";
-  }
-}
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+function token() { return localStorage.getItem("kronos_token") || sessionStorage.getItem("kronos_token"); }
+function auth() { const value = token(); return value ? { headers: { Authorization: `Bearer ${value}` } } : {}; }
+function date(value) { return value ? new Date(value).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" }) : ""; }
 
 export default function SocialPage() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [likingPostId, setLikingPostId] = useState(null);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  const [liking, setLiking] = useState("");
+  const [commenting, setCommenting] = useState("");
+  const [commentText, setCommentText] = useState({});
+  const [openComments, setOpenComments] = useState({});
 
   async function loadPosts() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await axios.get(
-        `${API}/posts`,
-        getAuthConfig()
-      );
-
-      setPosts(
-        Array.isArray(response.data?.posts)
-          ? response.data.posts
-          : []
-      );
-    } catch (requestError) {
-      console.error(
-        "KRONOS_SOCIAL_LOAD_ERROR:",
-        requestError
-      );
-
-      setError(
-        requestError.response?.data?.error ||
-          "No se pudieron cargar las publicaciones."
-      );
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true); setError("");
+    try { const response = await axios.get(`${API}/posts`, auth()); setPosts(Array.isArray(response.data?.posts) ? response.data.posts : []); }
+    catch (requestError) { setError(requestError.response?.data?.error || "No se pudieron cargar las publicaciones."); }
+    finally { setLoading(false); }
   }
+  useEffect(() => { loadPosts(); }, []);
 
   async function likePost(postId) {
-    if (!postId || likingPostId) {
-      return;
-    }
-
-    setLikingPostId(postId);
-    setError("");
-
-    try {
-      const response = await axios.post(
-        `${API}/posts/${postId}/like`,
-        {},
-        getAuthConfig()
-      );
-
-      setPosts((currentPosts) =>
-        currentPosts.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                likesCount:
-                  typeof response.data?.likesCount ===
-                  "number"
-                    ? response.data.likesCount
-                    : post.likesCount || 0,
-                liked: Boolean(
-                  response.data?.liked
-                ),
-              }
-            : post
-        )
-      );
-    } catch (requestError) {
-      console.error(
-        "KRONOS_SOCIAL_LIKE_ERROR:",
-        requestError
-      );
-
-      setError(
-        requestError.response?.data?.error ||
-          "No se pudo actualizar el like."
-      );
-    } finally {
-      setLikingPostId(null);
-    }
+    if (liking) return; setLiking(postId); setError("");
+    try { const response = await axios.post(`${API}/posts/${postId}/like`, {}, auth()); setPosts(items => items.map(post => post._id === postId ? { ...post, liked: response.data.liked, likesCount: response.data.likesCount } : post)); }
+    catch (requestError) { setError(requestError.response?.data?.error || "No se pudo actualizar el like."); }
+    finally { setLiking(""); }
+  }
+  async function commentPost(event, postId) {
+    event.preventDefault(); const content = (commentText[postId] || "").trim(); if (!content || commenting) return;
+    setCommenting(postId); setError("");
+    try { const response = await axios.post(`${API}/posts/${postId}/comments`, { content }, auth()); const updated = response.data?.post; if (updated) setPosts(items => items.map(post => post._id === postId ? updated : post)); setCommentText(items => ({ ...items, [postId]: "" })); setOpenComments(items => ({ ...items, [postId]: true })); }
+    catch (requestError) { setError(requestError.response?.data?.error || "No se pudo publicar el comentario."); }
+    finally { setCommenting(""); }
+  }
+  async function sharePost(post) {
+    const url = `${window.location.origin}/post/${post._id}`;
+    try { if (navigator.share) await navigator.share({ title: "Publicación en Kronos", text: post.content, url }); else { await navigator.clipboard.writeText(url); window.alert("Enlace copiado"); } }
+    catch (shareError) { if (shareError.name !== "AbortError") setError("No se pudo compartir la publicación."); }
   }
 
-  if (loading) {
-    return (
-      <section className="page">
-        <h2>Inicio</h2>
-        <p>Cargando publicaciones...</p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="page social-page">
-      <header>
-        <h2>Inicio</h2>
-
-        <p>
-          Tu feed de Kronos.
-        </p>
-      </header>
-
-      {error && (
-        <p role="alert">
-          {error}
-        </p>
-      )}
-
-      <CreatePost
-        onCreated={(post) =>
-          setPosts((currentPosts) => [
-            post,
-            ...currentPosts,
-          ])
-        }
-      />
-
-      <div className="posts-list">
-        {posts.length === 0 ? (
-          <p>
-            Todavía no hay publicaciones.
-          </p>
-        ) : (
-          posts.map((post) => {
-            const comments = Array.isArray(
-              post.comments
-            )
-              ? post.comments
-              : [];
-
-            const likesCount =
-              typeof post.likesCount ===
-              "number"
-                ? post.likesCount
-                : Array.isArray(post.likes)
-                  ? post.likes.length
-                  : 0;
-
-            return (
-              <article
-                className="post"
-                key={post._id}
-              >
-                <header className="post-header">
-                  <div>
-                    <strong>
-                      {post.author?.displayName ||
-                        post.author?.username ||
-                        "Usuario"}
-                    </strong>
-
-                    {post.author?.username && (
-                      <span>
-                        @{post.author.username}
-                      </span>
-                    )}
-                  </div>
-
-                  <small>
-                    {formatDate(
-                      post.createdAt
-                    )}
-                  </small>
-                </header>
-
-                <Link
-                  className="post-content-link"
-                  to={`/post/${post._id}`}
-                >
-                  <p>
-                    {post.content}
-                  </p>
-                </Link>
-
-                <div className="post-actions">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      likePost(post._id)
-                    }
-                    disabled={
-                      likingPostId ===
-                      post._id
-                    }
-                  >
-                    {post.liked
-                      ? "Ya no me gusta"
-                      : "Me gusta"}{" "}
-                    {likesCount}
-                  </button>
-
-                  <Link
-                    to={`/post/${post._id}`}
-                  >
-                    Comentarios{" "}
-                    {comments.length}
-                  </Link>
-                </div>
-              </article>
-            );
-          })
-        )}
-      </div>
-    </section>
-  );
+  if (loading) return <section className="page"><div className="k-surface k-feed-state"><span className="k-skeleton" /><span className="k-skeleton k-skeleton-wide" /><span className="k-skeleton" /></div></section>;
+  return <section className="page k-feed-page">
+    <header className="k-page-header"><div><p className="k-eyebrow">KRONOS / SOCIAL</p><h1>Tu feed</h1><p>Publicaciones reales de tu comunidad.</p></div><button className="k-button k-button-secondary" type="button" onClick={loadPosts}>Actualizar</button></header>
+    {error && <p className="k-state k-state-error" role="alert">{error}</p>}
+    <CreatePost onCreated={post => setPosts(items => [post, ...items])} />
+    <div className="k-feed-list">
+      {posts.length === 0 ? <div className="k-empty-state"><h2>Aún no hay publicaciones</h2><p>Comparte la primera idea de tu comunidad.</p><button className="k-button k-button-primary" type="button" onClick={() => navigate("/create")}>Crear publicación</button></div> : posts.map(post => {
+        const comments = Array.isArray(post.comments) ? post.comments : [];
+        return <article className="k-post" key={post._id}>
+          <header className="k-post-header"><Link className="k-avatar" to={post.author?.username ? `/profile/${post.author.username}` : "/profile"}>{post.author?.displayName?.slice(0, 1) || "K"}</Link><div><Link className="k-post-author" to={post.author?.username ? `/profile/${post.author.username}` : "/profile"}>{post.author?.displayName || post.author?.username || "Usuario"}</Link><p>@{post.author?.username || "kronos"} · {date(post.createdAt)}</p></div></header>
+          <Link className="k-post-content" to={`/post/${post._id}`}><p>{post.content}</p></Link>
+          <div className="k-post-actions"><button type="button" className={post.liked ? "is-liked" : ""} onClick={() => likePost(post._id)} disabled={liking === post._id}>{post.liked ? "Me gusta" : "Like"} · {post.likesCount || 0}</button><button type="button" onClick={() => setOpenComments(items => ({ ...items, [post._id]: !items[post._id] }))}>Comentar · {comments.length}</button><button type="button" onClick={() => sharePost(post)}>Compartir</button></div>
+          {openComments[post._id] && <div className="k-comments"><form onSubmit={event => commentPost(event, post._id)}><input value={commentText[post._id] || ""} onChange={event => setCommentText(items => ({ ...items, [post._id]: event.target.value }))} placeholder="Escribe un comentario" maxLength={1000} /><button className="k-button k-button-primary" type="submit" disabled={commenting === post._id}>{commenting === post._id ? "Enviando..." : "Enviar"}</button></form>{comments.map(comment => <div className="k-comment" key={comment._id || `${comment.user?._id}-${comment.content}`}><strong>{comment.user?.displayName || comment.user?.username || "Usuario"}</strong><span>{comment.content}</span></div>)}</div>}
+        </article>;
+      })}
+    </div>
+  </section>;
 }
-
-

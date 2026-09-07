@@ -1,0 +1,59 @@
+:root {
+  --k-black: oklch(8% 0.008 255);
+  --k-bg: oklch(11% 0.009 255);
+  --k-surface: oklch(15% 0.01 255);
+  --k-surface-2: oklch(19% 0.012 255);
+  --k-surface-3: oklch(23% 0.014 255);
+
+  --k-text: oklch(96% 0.008 255);
+  --k-text-soft: oklch(82% 0.012 255);
+  --k-muted: oklch(64% 0.014 255);
+  --k-steel: oklch(52% 0.014 255);
+  --k-silver: oklch(78% 0.012 255);
+  --k-chrome: oklch(93% 0.008 255);
+  --k-titanium: oklch(69% 0.012 255);
+
+  --k-blue: oklch(66% 0.19 250);
+  --k-blue-hover: oklch(73% 0.17 250);
+  --k-blue-soft: oklch(66% 0.19 250 / 0.16);
+  --k-success: oklch(72% 0.14 155);
+  --k-danger: oklch(67% 0.18 25);
+  --k-warning: oklch(78% 0.14 85);
+
+  --k-border: oklch(78% 0.012 255 / 0.2);
+  --k-border-strong: oklch(88% 0.01 255 / 0.38);
+  --k-focus: oklch(73% 0.17 250 / 0.72);
+
+  --k-radius-sm: 6px;
+  --k-radius-md: 12px;
+  --k-radius-lg: 18px;
+  --k-radius-xl: 24px;
+  --k-radius-pill: 999px;
+
+  --k-space-1: 4px;
+  --k-space-2: 8px;
+  --k-space-3: 12px;
+  --k-space-4: 16px;
+  --k-space-5: 24px;
+  --k-space-6: 32px;
+  --k-space-7: 48px;
+  --k-space-8: 64px;
+
+  --k-shadow-sm: 0 4px 16px oklch(0% 0 0 / 0.18);
+  --k-shadow-md: 0 12px 32px oklch(0% 0 0 / 0.28);
+  --k-shadow-lg: 0 24px 64px oklch(0% 0 0 / 0.38);
+  --k-transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --k-transition-layout: 320ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  --k-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --k-text-xs: 0.75rem;
+  --k-text-sm: 0.875rem;
+  --k-text-md: 1rem;
+  --k-text-lg: 1.25rem;
+  --k-text-xl: clamp(1.8rem, 4vw, 3.2rem);
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--k-focus);
+  outline-offset: 3px;
+}
