@@ -1,46 +1,8 @@
-import { useState } from "react";
-import ScriptGenerator from "../script-ai/ScriptGenerator";
-import ImageGenerator from "../image-ai/ImageGenerator";
-import VideoGenerator from "../video-ai/VideoGenerator";
-import KronosChat from "./KronosChat";
+import { Link } from "react-router-dom";
+import { Image, Clapperboard, FileText, History, Sparkles } from "lucide-react";
 
-const modes = [
-  { id: "chat", label: "Kronos AI" },
-  { id: "script", label: "Scripts" },
-  { id: "image", label: "Imagen" },
-  { id: "video", label: "Video" }
-];
+const tools = [["/kairos/image", "Imagen", "Genera conceptos visuales desde un prompt.", Image], ["/kairos/video", "Video", "Convierte una idea en una pieza audiovisual.", Clapperboard], ["/kairos/script", "Script", "Estructura historias, reels y campañas.", FileText], ["/kairos/history", "Historial", "Revisa y reutiliza tus generaciones.", History]];
 
 export default function AICenter() {
-  const [mode, setMode] = useState("chat");
-
-  return (
-    <section className="ai-center page">
-      <header className="ai-center-header">
-        <h1>KRONOS AI</h1>
-        <p>
-          Genera scripts, imágenes y videos desde un solo lugar.
-        </p>
-      </header>
-
-      <nav className="ai-mode-selector">
-        {modes.map(item => (
-          <button
-            key={item.id}
-            className={mode === item.id ? "active" : ""}
-            onClick={() => setMode(item.id)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      <main className="ai-workspace">
-        {mode === "chat" && <KronosChat />}
-        {mode === "script" && <ScriptGenerator />}
-        {mode === "image" && <ImageGenerator />}
-        {mode === "video" && <VideoGenerator />}
-      </main>
-    </section>
-  );
+  return <section className="page k-kairos-page"><header className="k-kairos-hero"><div><p className="k-eyebrow"><Sparkles size={14} /> KAIROS / AI CREATION ENGINE</p><h1>KAIROS</h1><p>AI CREATION STUDIO</p><span>El motor creativo de Kronos para crear imágenes, videos y scripts sin salir de tu espacio.</span></div><Link className="k-button k-button-ai" to="/kairos/history">Abrir historial</Link></header><div className="k-kairos-grid">{tools.map(([to, title, description, Icon]) => <Link className="k-kairos-tool" to={to} key={to}><span className="k-kairos-icon"><Icon size={22} /></span><div><p className="k-eyebrow">KAIROS TOOL</p><h2>{title}</h2><p>{description}</p></div><span className="k-kairos-arrow">↗</span></Link>)}</div></section>;
 }
