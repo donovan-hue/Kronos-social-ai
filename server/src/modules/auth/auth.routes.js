@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const User = require("../users/User");
 
 const router = express.Router();
@@ -24,6 +25,96 @@ function createToken(user) {
   );
 }
 
+function normalizeEmail(email) {
+  return typeof email === "string"
+    ? email.trim().toLowerCase()
+    : "";
+}
+
+function validEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function hashResetToken(token) {
+  return crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+}
+
+function getFrontendOrigin() {
+  const origins = (process.env.CLIENT_URL || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return origins[0] || "http://localhost:5173";
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function sendPasswordResetEmail({
+  email,
+  username,
+  resetUrl
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL;
+
+  if (!apiKey || !fromEmail) {
+    throw new Error("EMAIL_SERVICE_NOT_CONFIGURED");
+  }
+
+  const safeUsername = escapeHtml(username || "usuario");
+  const safeResetUrl = escapeHtml(resetUrl);
+
+  const response = await fetch(
+    "https://api.resend.com/emails",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: [email],
+        subject: "Restablece tu contraseña de Kronos Social AI",
+        html: `
+          <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:auto">
+            <h2>Kronos Social AI</h2>
+            <p>Hola ${safeUsername}.</p>
+            <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+            <p>
+              <a
+                href="${safeResetUrl}"
+                style="display:inline-block;padding:12px 20px;background:#111;color:#fff;text-decoration:none;border-radius:8px"
+              >
+                Restablecer contraseña
+              </a>
+            </p>
+            <p>Este enlace expirará en 30 minutos.</p>
+            <p>Si tú no solicitaste este cambio, puedes ignorar este correo.</p>
+          </div>
+        `
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const body = await response.text();
+    console.error("RESEND_ERROR:", body);
+    throw new Error("EMAIL_SEND_FAILED");
+  }
+}
+
 router.post("/register", async (req, res) => {
   try {
     const {
@@ -44,12 +135,9 @@ router.post("/register", async (req, res) => {
       username.trim().toLowerCase();
 
     const normalizedEmail =
-      email.trim().toLowerCase();
+      normalizeEmail(email);
 
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(normalizedEmail)) {
+    if (!validEmail(normalizedEmail)) {
       return res.status(400).json({
         error: "Email inválido"
       });
@@ -111,10 +199,7 @@ router.post("/register", async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(
-      "REGISTER_ERROR:",
-      error
-    );
+    console.error("REGISTER_ERROR:", error);
 
     if (error.code === 11000) {
       return res.status(409).json({
@@ -141,7 +226,7 @@ router.post("/login", async (req, res) => {
     }
 
     const normalizedEmail =
-      email.trim().toLowerCase();
+      normalizeEmail(email);
 
     const user = await User.findOne({
       email: normalizedEmail
@@ -223,13 +308,156 @@ router.post("/login", async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("LOGIN_ERROR:", error);
+
+    return res.status(500).json({
+      error: "Error iniciando sesión"
+    });
+  }
+});
+
+router.post("/forgot-password", async (req, res) => {
+  const genericResponse = {
+    message:
+      "Si existe una cuenta con ese correo, recibirás instrucciones para restablecer tu contraseña."
+  };
+
+  try {
+    const email = normalizeEmail(req.body?.email);
+
+    if (!validEmail(email)) {
+      return res.json(genericResponse);
+    }
+
+    const user = await User.findOne({
+      email
+    }).select(
+      "+passwordResetTokenHash +passwordResetExpiresAt"
+    );
+
+    if (!user) {
+      return res.json(genericResponse);
+    }
+
+    const resetToken =
+      crypto.randomBytes(32).toString("hex");
+
+    const tokenHash =
+      hashResetToken(resetToken);
+
+    const expiresAt =
+      new Date(Date.now() + 30 * 60 * 1000);
+
+    user.passwordResetTokenHash = tokenHash;
+    user.passwordResetExpiresAt = expiresAt;
+
+    await user.save();
+
+    const resetUrl =
+      `${getFrontendOrigin()}/reset-password?token=${encodeURIComponent(resetToken)}`;
+
+    try {
+      await sendPasswordResetEmail({
+        email: user.email,
+        username: user.username,
+        resetUrl
+      });
+    } catch (emailError) {
+      user.passwordResetTokenHash = null;
+      user.passwordResetExpiresAt = null;
+      await user.save();
+
+      console.error(
+        "PASSWORD_RESET_EMAIL_ERROR:",
+        emailError.message
+      );
+
+      return res.status(503).json({
+        error:
+          "El servicio de correo no está disponible. Intenta nuevamente más tarde."
+      });
+    }
+
+    return res.json(genericResponse);
+  } catch (error) {
     console.error(
-      "LOGIN_ERROR:",
+      "FORGOT_PASSWORD_ERROR:",
       error
     );
 
     return res.status(500).json({
-      error: "Error iniciando sesión"
+      error:
+        "No fue posible procesar la solicitud."
+    });
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  try {
+    const {
+      token,
+      password
+    } = req.body || {};
+
+    if (
+      typeof token !== "string" ||
+      token.length < 40
+    ) {
+      return res.status(400).json({
+        error: "Token de recuperación inválido."
+      });
+    }
+
+    if (
+      typeof password !== "string" ||
+      password.length < 8
+    ) {
+      return res.status(400).json({
+        error:
+          "La contraseña debe tener mínimo 8 caracteres."
+      });
+    }
+
+    const tokenHash =
+      hashResetToken(token);
+
+    const user = await User.findOne({
+      passwordResetTokenHash: tokenHash,
+      passwordResetExpiresAt: {
+        $gt: new Date()
+      }
+    }).select(
+      "+passwordResetTokenHash +passwordResetExpiresAt"
+    );
+
+    if (!user) {
+      return res.status(400).json({
+        error:
+          "El enlace de recuperación es inválido o ya expiró."
+      });
+    }
+
+    user.passwordHash =
+      await bcrypt.hash(password, 12);
+
+    user.passwordResetTokenHash = null;
+    user.passwordResetExpiresAt = null;
+
+    await user.save();
+
+    return res.json({
+      message:
+        "Contraseña actualizada correctamente."
+    });
+  } catch (error) {
+    console.error(
+      "RESET_PASSWORD_ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      error:
+        "No fue posible actualizar la contraseña."
     });
   }
 });
