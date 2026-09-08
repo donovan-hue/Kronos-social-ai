@@ -43,6 +43,31 @@ router.get("/user/:userId", auth, requireUser, async (req, res) => {
   }
 });
 
+router.get("/feed", auth, requireUser, async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .populate("author", AUTHOR_FIELDS)
+      .populate("comments.user", COMMENT_USER_FIELDS)
+      .sort({ createdAt: -1 })
+      .limit(FEED_LIMIT)
+      .lean();
+
+    const normalizedPosts = posts.map((post) =>
+      normalizePost(post, req.user.id)
+    );
+
+    return res.status(200).json({
+      posts: normalizedPosts
+    });
+  } catch (error) {
+    console.error("GET_FEED_ERROR:", error);
+
+    return res.status(500).json({
+      error: "Error obteniendo feed"
+    });
+  }
+});
+
 router.get("/:postId", auth, requireUser, async (req, res) => {
   try {
     const { postId } = req.params;

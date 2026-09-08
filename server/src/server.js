@@ -46,10 +46,47 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(inputSanitizer);
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: "draft-8", legacyHeaders: false, message: { error: "Demasiadas solicitudes. Intenta nuevamente más tarde." } });
 app.use("/api", apiLimiter);
-const abuseLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 60, standardHeaders: "draft-8", legacyHeaders: false, message: { error: "Demasiadas acciones en poco tiempo. Intenta nuevamente más tarde." } });
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: "draft-8", legacyHeaders: false, message: { error: "Demasiados intentos. Intenta nuevamente más tarde." } });
-app.get("/health", (req, res) => res.json({ ok: true, service: "kronos-social-ai" }));
-app.use("/api/auth", authLimiter, authRoutes);
+const abuseLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error:
+      "Demasiadas acciones en poco tiempo. Intenta nuevamente más tarde."
+  }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error:
+      "Demasiados intentos. Intenta nuevamente más tarde."
+  }
+});
+
+const healthResponse = (req, res) => {
+  res.json({
+    ok: true,
+    service: "kronos-social-ai",
+    realtime: true,
+    timestamp: new Date().toISOString()
+  });
+};
+
+app.get("/health", healthResponse);
+app.get("/api/health", healthResponse);
+
+
+app.use(
+  "/api/auth",
+  authLimiter,
+  authRoutes
+);
+
 app.use("/api/users", userRoutes);
 app.use("/api/posts", abuseLimiter, postRoutes);
 app.use("/api/messages", abuseLimiter, messageRoutes);
