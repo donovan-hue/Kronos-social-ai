@@ -322,13 +322,17 @@ router.post("/forgot-password", async (req, res) => {
       "Si existe una cuenta con ese correo, recibirás instrucciones para restablecer tu contraseña."
   };
 
+  let debugStage = "inicio";
+
   try {
+    debugStage = "normalizar_email";
     const email = normalizeEmail(req.body?.email);
 
     if (!validEmail(email)) {
       return res.json(genericResponse);
     }
 
+    debugStage = "buscar_usuario";
     console.log("PASSWORD_RESET_DEBUG: buscando usuario");
 
     const user = await User.findOne({
@@ -350,6 +354,7 @@ router.post("/forgot-password", async (req, res) => {
       "PASSWORD_RESET_DEBUG: usuario válido, preparando token"
     );
 
+    debugStage = "generar_token";
     const resetToken =
       crypto.randomBytes(32).toString("hex");
 
@@ -362,12 +367,15 @@ router.post("/forgot-password", async (req, res) => {
     user.passwordResetTokenHash = tokenHash;
     user.passwordResetExpiresAt = expiresAt;
 
+    debugStage = "guardar_token";
     await user.save();
 
+    debugStage = "crear_url";
     const resetUrl =
       `${getFrontendOrigin()}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
     try {
+      debugStage = "enviar_email";
       await sendPasswordResetEmail({
         email: user.email,
         username: user.username,
@@ -397,8 +405,8 @@ router.post("/forgot-password", async (req, res) => {
     );
 
     return res.status(500).json({
-      error:
-        "No fue posible procesar la solicitud."
+      error: "No fue posible procesar la solicitud.",
+      debugStage
     });
   }
 });
