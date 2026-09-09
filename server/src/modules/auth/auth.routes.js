@@ -329,15 +329,26 @@ router.post("/forgot-password", async (req, res) => {
       return res.json(genericResponse);
     }
 
+    console.log("PASSWORD_RESET_DEBUG: buscando usuario");
+
     const user = await User.findOne({
       email
     }).select(
       "+passwordResetTokenHash +passwordResetExpiresAt"
     );
 
+    console.log(
+      "PASSWORD_RESET_DEBUG: usuario=",
+      user ? "ENCONTRADO" : "NO_ENCONTRADO"
+    );
+
     if (!user) {
       return res.json(genericResponse);
     }
+
+    console.log(
+      "PASSWORD_RESET_DEBUG: usuario válido, preparando token"
+    );
 
     const resetToken =
       crypto.randomBytes(32).toString("hex");
