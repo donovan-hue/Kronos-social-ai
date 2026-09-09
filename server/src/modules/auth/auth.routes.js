@@ -387,9 +387,15 @@ router.post("/forgot-password", async (req, res) => {
         resetUrl
       });
     } catch (emailError) {
-      user.passwordResetTokenHash = null;
-      user.passwordResetExpiresAt = null;
-      await user.save();
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            passwordResetTokenHash: null,
+            passwordResetExpiresAt: null
+          }
+        }
+      );
 
       console.error(
         "PASSWORD_RESET_EMAIL_ERROR:",
@@ -398,7 +404,12 @@ router.post("/forgot-password", async (req, res) => {
 
       return res.status(503).json({
         error:
-          "El servicio de correo no está disponible. Intenta nuevamente más tarde."
+          "El servicio de correo no está disponible. Intenta nuevamente más tarde.",
+        debugError: {
+          name: emailError?.name || null,
+          message: emailError?.message || null,
+          code: emailError?.code || null
+        }
       });
     }
 
