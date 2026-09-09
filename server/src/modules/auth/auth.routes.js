@@ -411,7 +411,12 @@ router.post("/forgot-password", async (req, res) => {
 
     return res.status(500).json({
       error: "No fue posible procesar la solicitud.",
-      debugStage
+      debugStage,
+      debugError: {
+        name: error?.name || null,
+        message: error?.message || null,
+        code: error?.code || null
+      }
     });
   }
 });
