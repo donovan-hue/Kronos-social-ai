@@ -364,11 +364,16 @@ router.post("/forgot-password", async (req, res) => {
     const expiresAt =
       new Date(Date.now() + 30 * 60 * 1000);
 
-    user.passwordResetTokenHash = tokenHash;
-    user.passwordResetExpiresAt = expiresAt;
-
     debugStage = "guardar_token";
-    await user.save();
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          passwordResetTokenHash: tokenHash,
+          passwordResetExpiresAt: expiresAt
+        }
+      }
+    );
 
     debugStage = "crear_url";
     const resetUrl =
